@@ -1,0 +1,11 @@
+.gitignore
+CHANGES.rst
+README.rst
+setup.cfg
+setup.py
+Zope2.egg-info/PKG-INFO
+Zope2.egg-info/SOURCES.txt
+Zope2.egg-info/dependency_links.txt
+Zope2.egg-info/not-zip-safe
+Zope2.egg-info/requires.txt
+Zope2.egg-info/top_level.txt
