@@ -8,7 +8,9 @@ import Cards
 def main():
     card_location = 'training_imgs/'
 
-    test_images = [card_location + "1_image.png", card_location + "2_image.png", card_location + "3_image.png"]
+    test_images = [card_location + "1_image.png", card_location + "2_image.png", card_location + "3_image.png",
+                   card_location + "4_image.png", card_location + "5_image.png", card_location + "6_image.png",
+                   card_location + "7_image.png"]
 
     for imagepath in test_images:
 
