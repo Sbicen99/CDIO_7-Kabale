@@ -12,7 +12,7 @@ if input_from_user == '1':
     cap = cv2.VideoCapture(0)
 else:
     pasted_URL = input("Paste the IP Camera Server URL ")
-cap = cv2.VideoCapture(
+    cap = cv2.VideoCapture(
         f'{pasted_URL}/video')  # Ændres, hvis der skal testes. Skrives der '1' i stedet, vil webcam kunne anvendes
 
 while True:
