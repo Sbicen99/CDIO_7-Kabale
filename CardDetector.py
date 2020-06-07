@@ -13,6 +13,8 @@ import time
 import os
 import Cards
 import VideoStream
+from PIL import Image
+
 
 ### ---- INITIALIZATION ---- ###
 # Define constants and initialize variables
@@ -25,10 +27,8 @@ FRAME_RATE = 2
 ## Initialize calculated frame rate because it's calculated AFTER the first time it's displayed
 frame_rate_calc = 1
 freq = cv2.getTickFrequency()
-
 ## Define font to use
 font = cv2.FONT_HERSHEY_SIMPLEX
-
 # Initialize camera object and video feed from the camera. The video stream is set up
 # as a seperate thread that constantly grabs frames from the camera feed. 
 # See VideoStream.py for VideoStream class definition
@@ -58,7 +58,7 @@ while cam_quit == 0:
     t1 = cv2.getTickCount()
 
     # Pre-process camera image (gray, blur, and threshold it)
-    pre_proc = Cards.preprocess_image(image)
+    pre_proc = Cards.preprocces_image(image)
 
     # Find and sort the contours of all cards in the image (query cards)
     cnts_sort, cnt_is_card = Cards.find_cards(pre_proc)
@@ -104,7 +104,7 @@ while cam_quit == 0:
     # Finally, display the image with the identified cards!
     cv2.imshow("Card Detector", image)
 
-    cv2.imshow("Preprossed image", Cards.preprocess_imageOLD(image))
+    cv2.imshow("Preprossed image", Cards.preprocces_image(image))
 
     # Calculate framerate
     t2 = cv2.getTickCount()

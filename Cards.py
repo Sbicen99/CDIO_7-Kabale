@@ -145,7 +145,6 @@ def preprocess_imageOLD(image):
     thresh_level = bkg_level + BKG_THRESH
 
     retval, thresh = cv2.threshold(blur, thresh_level, 255, cv2.THRESH_BINARY)
-
     return thresh
 
 

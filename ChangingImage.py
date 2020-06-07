@@ -10,7 +10,7 @@ Printer alle slags kort ud; printer hvert kort der detekteres, ændrer baggrunde
 """
 
 def main():
-    cardPath = 'training_imgs/1_image.png'
+    cardPath = 'training_imgs/3_image.png'
 
     print_img = cv2.imread(cardPath)
     print_frame = imutils.resize(print_img, 640, 640)

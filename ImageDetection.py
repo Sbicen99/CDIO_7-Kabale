@@ -33,7 +33,6 @@ def main():
                 temp_contours.append(cnt)
 
         cv2.drawContours(print_frame, temp_contours, -1, (100, 200, 300), 3)
-
         cv2.imshow(imagepath, print_frame)
 
         print(imagepath + " number of contours %d -> " % len(temp_contours))
