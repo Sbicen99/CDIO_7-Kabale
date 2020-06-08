@@ -14,7 +14,6 @@ import time
 ### Constants ###
 
 # Adaptive threshold levels
-import CardDetector
 import ChangingImage
 
 BKG_THRESH = 60
@@ -99,8 +98,21 @@ def load_ranks(filepath):
     train_ranks = []
     i = 0
 
-    for Rank in ['Ace', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven',
-                 'Eight', 'Nine', 'Ten', 'Jack', 'Queen', 'King']:
+
+    for Rank in ['Ace', 'Ace_g', 'Ace_ga', 'Ace_gb',
+                 'Two', 'Two_g',
+                 'Three', 'Three_g',
+                 'Four', 'Four_g',
+                 'Five', 'Five_g',
+                 'Six', 'Six_g',
+                 'Seven', 'Seven_g',
+                 'Eight', 'Eight_g',
+                 'Nine', 'Nine_g',
+                 'Ten', 'Ten_g',
+                 'Jack', 'Jack_g',
+                 'Queen', 'Queen_g',
+                 'King', 'King_g']:
+
         train_ranks.append(Train_ranks())
         train_ranks[i].name = Rank
         filename = Rank + '.jpg'
@@ -117,7 +129,10 @@ def load_suits(filepath):
     train_suits = []
     i = 0
 
-    for Suit in ['Spades', 'Diamonds', 'Clubs', 'Hearts', 'Clubs_1']:
+    for Suit in ['Spades', 'Spades_ga', 'Spades_gb',
+                 'Diamonds', 'Diamonds_g',
+                 'Clubs', 'Clubs_g', 'Clubs_ga',
+                 'Hearts', 'Hearts_g']:
         train_suits.append(Train_suits())
         train_suits[i].name = Suit
         filename = Suit + '.jpg'
@@ -252,8 +267,8 @@ def preprocess_card(contour, image):
 #    query_thresh_suit = cv2.cvtColor(thresh, cv2.COLOR_BGR2GRAY)
 
     # Split in to top and bottom half (top shows rank, bottom shows suit)
-    Qrank = im_bw[20:190, 0:120]
-    Qsuit = im_bw[170:336, 0:120]
+    Qrank = im_bw[20:190, 0:135]
+    Qsuit = im_bw[150:336, 0:135]
 
     #cv2.imshow('Qrank thresh', Qrank)
     #cv2.imshow('Qsuit thresh', Qsuit)
@@ -437,5 +452,4 @@ def flattener(image, pts, w, h):
 
     return warp
 
-CardDetector
 

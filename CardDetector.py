@@ -52,7 +52,7 @@ cam_quit = 0  # Loop control variable
 
 # Begin capturing frames
 while cam_quit == 0:
-    resize.resize(path + '/training_imgs/IMG_0816.jpg')
+    resize.resize(path + '/training_imgs/IMG_0817.jpg')
     # Grab frame from video stream
     # image = videostream.read()
     image = cv2.imread(path + '/training_imgs/temp-test.jpg')
