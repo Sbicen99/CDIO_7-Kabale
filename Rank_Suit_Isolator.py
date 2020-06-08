@@ -36,8 +36,8 @@ for Name in ['Ace', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight',
 
     # Press 'p' to take a picture
     while True:
-
-        ret, frame = cap.read()
+        path = os.path.dirname(os.path.abspath(__file__))
+        frame = cv2.imread(path + '/training_imgs/hjerter_4.jpg')
         cv2.imshow("Card", frame)
         key = cv2.waitKey(1) & 0xFF
         if key == ord("p"):

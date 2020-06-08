@@ -9,13 +9,12 @@ import Cards
 Printer alle slags kort ud; printer hvert kort der detekteres, ændrer baggrunden på billederne (edge detection) og farver billederne grå
 """
 
-def main():
-    cardPath = 'training_imgs/3_image.png'
+def main(image):
+    # cardPath = 'training_imgs/3_image.png'
 
-    print_img = cv2.imread(cardPath)
-    print_frame = imutils.resize(print_img, 640, 640)
+    print_frame = imutils.resize(image, 640, 640)
 
-    image = cv2.imread(cardPath, cv2.IMREAD_GRAYSCALE)
+    # image = cv2.imread(cardPath, cv2.IMREAD_GRAYSCALE)
     frame = imutils.resize(image, 640, 640)
 
 
@@ -59,4 +58,3 @@ def main():
     cv2.destroyAllWindows()
 
 
-main()

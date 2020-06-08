@@ -14,6 +14,8 @@ import time
 ### Constants ###
 
 # Adaptive threshold levels
+import ChangingImage
+
 BKG_THRESH = 60
 CARD_THRESH = 30
 
@@ -219,6 +221,8 @@ def preprocess_card(contour, image):
     # Warp card into 200x300 flattened image using perspective transform
     qCard.warp = flattener(image, pts, w, h)
 
+    cv2.imshow("200x300 card", qCard.warp)
+
     # Grab corner of warped card image and do a 4x zoom
     Qcorner = qCard.warp[0:CORNER_HEIGHT, 0:CORNER_WIDTH]
     Qcorner_zoom = cv2.resize(Qcorner, (0, 0), fx=4, fy=4)
@@ -235,18 +239,18 @@ def preprocess_card(contour, image):
 
     cv2.imshow('Qcorner', Qcorner_zoom)
 
+    # Retval bruges ikke
+    (retval, query_thresh_rank) = cv2.threshold(Qcorner_zoom, 127, 255, cv2.THRESH_BINARY_INV)
+    (retval, query_thresh_suit) = cv2.threshold(Qcorner_zoom, 127, 255, cv2.THRESH_BINARY_INV)
 
-    (retval, query_thresh) = cv2.threshold(Qcorner_zoom, 127, 255, cv2.THRESH_BINARY_INV)
+    # cv2.imshow('query thresh', query_thresh)
 
-    cv2.imshow('query thresh', query_thresh)
-
-    query_thresh = cv2.cvtColor(query_thresh, cv2.COLOR_BGR2GRAY)
-
-    cv2.imshow('query thresh after', query_thresh)
+    query_thresh_rank = cv2.cvtColor(query_thresh_rank, cv2.COLOR_BGR2GRAY)
+    query_thresh_suit = cv2.cvtColor(query_thresh_suit, cv2.COLOR_BGR2GRAY)
 
     # Split in to top and bottom half (top shows rank, bottom shows suit)
-    Qrank = query_thresh[20:185, 0:128]
-    Qsuit = query_thresh[186:336, 0:128]
+    Qrank = query_thresh_rank[20:169, 0:120]
+    Qsuit = query_thresh_suit[170:336, 0:120]
 
     cv2.imshow('Qrank thresh', Qrank)
     cv2.imshow('Qsuit thresh', Qsuit)
@@ -263,6 +267,8 @@ def preprocess_card(contour, image):
         Qrank_roi = Qrank[y1:y1 + h1, x1:x1 + w1]
         Qrank_sized = cv2.resize(Qrank_roi, (RANK_WIDTH, RANK_HEIGHT), 0, 0)
         qCard.rank_img = Qrank_sized
+        cv2.imshow('qCard.rank_img', qCard.rank_img)
+
 
 
     # Find suit contour and bounding rectangle, isolate and find largest contour
@@ -276,6 +282,7 @@ def preprocess_card(contour, image):
         Qsuit_roi = Qsuit[y2:y2 + h2, x2:x2 + w2]
         Qsuit_sized = cv2.resize(Qsuit_roi, (SUIT_WIDTH, SUIT_HEIGHT), 0, 0)
         qCard.suit_img = Qsuit_sized
+        cv2.imshow('qCard.suit', qCard.suit_img)
 
     return qCard
 

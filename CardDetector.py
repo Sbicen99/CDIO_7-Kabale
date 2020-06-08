@@ -53,7 +53,7 @@ while cam_quit == 0:
 
     # Grab frame from video stream
     # image = videostream.read()
-    image = cv2.imread(path + '/training_imgs/test_kabale.jpg')
+    image = cv2.imread(path + '/training_imgs/kort4.jpg')
     # Start timer (for calculating frame rate)
     t1 = cv2.getTickCount()
     # Pre-process camera image (gray, blur, and threshold it)
@@ -72,7 +72,6 @@ while cam_quit == 0:
 
         # For each contour detected:
         for i in range(len(cnts_sort)):
-            print(cnt_is_card[i])
             if (cnt_is_card[i] == 1):
                 # Create a card object from the contour and append it to the list of cards.
                 # preprocess_card function takes the card contour and contour and
@@ -104,7 +103,7 @@ while cam_quit == 0:
     # Finally, display the image with the identified cards!
     cv2.imshow("Card Detector", image)
 
-    cv2.imshow("Preprossed image", Cards.preprocces_image(image))
+    # cv2.imshow("Preprossed image", Cards.preprocces_image(image))
 
     # Calculate framerate
     t2 = cv2.getTickCount()
