@@ -13,7 +13,6 @@ import time
 import os
 import Cards
 import VideoStream
-from PIL import Image
 
 
 ### ---- INITIALIZATION ---- ###
