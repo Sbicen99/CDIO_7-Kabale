@@ -14,6 +14,7 @@ import time
 ### Constants ###
 
 # Adaptive threshold levels
+import CardDetector
 import ChangingImage
 
 BKG_THRESH = 60
@@ -116,7 +117,7 @@ def load_suits(filepath):
     train_suits = []
     i = 0
 
-    for Suit in ['Spades', 'Diamonds', 'Clubs', 'Hearts']:
+    for Suit in ['Spades', 'Diamonds', 'Clubs', 'Hearts', 'Clubs_1']:
         train_suits.append(Train_suits())
         train_suits[i].name = Suit
         filename = Suit + '.jpg'
@@ -221,7 +222,7 @@ def preprocess_card(contour, image):
     # Warp card into 200x300 flattened image using perspective transform
     qCard.warp = flattener(image, pts, w, h)
 
-    cv2.imshow("200x300 card", qCard.warp)
+    # cv2.imshow("200x300 card", qCard.warp)
 
     # Grab corner of warped card image and do a 4x zoom
     Qcorner = qCard.warp[0:CORNER_HEIGHT, 0:CORNER_WIDTH]
@@ -239,21 +240,23 @@ def preprocess_card(contour, image):
 
     cv2.imshow('Qcorner', Qcorner_zoom)
 
+    gray_Qcorner = cv2.cvtColor(Qcorner_zoom, cv2.COLOR_BGR2GRAY)
+
     # Retval bruges ikke
-    (retval, query_thresh_rank) = cv2.threshold(Qcorner_zoom, 127, 255, cv2.THRESH_BINARY_INV)
-    (retval, query_thresh_suit) = cv2.threshold(Qcorner_zoom, 127, 255, cv2.THRESH_BINARY_INV)
+    # (retval, query_thresh) = cv2.threshold(Qcorner_zoom, 127, 255, cv2.THRESH_BINARY_INV)
+    (thresh, im_bw) = cv2.threshold(gray_Qcorner, 128, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)
 
-    # cv2.imshow('query thresh', query_thresh)
+    cv2.imshow('query thresh', im_bw)
 
-    query_thresh_rank = cv2.cvtColor(query_thresh_rank, cv2.COLOR_BGR2GRAY)
-    query_thresh_suit = cv2.cvtColor(query_thresh_suit, cv2.COLOR_BGR2GRAY)
+#    query_thresh_rank = cv2.cvtColor(thresh, cv2.COLOR_BGR2GRAY)
+#    query_thresh_suit = cv2.cvtColor(thresh, cv2.COLOR_BGR2GRAY)
 
     # Split in to top and bottom half (top shows rank, bottom shows suit)
-    Qrank = query_thresh_rank[20:169, 0:120]
-    Qsuit = query_thresh_suit[170:336, 0:120]
+    Qrank = im_bw[20:190, 0:120]
+    Qsuit = im_bw[170:336, 0:120]
 
-    cv2.imshow('Qrank thresh', Qrank)
-    cv2.imshow('Qsuit thresh', Qsuit)
+    #cv2.imshow('Qrank thresh', Qrank)
+    #cv2.imshow('Qsuit thresh', Qsuit)
 
 
     # Find rank contour and bounding rectangle, isolate and find largest contour
@@ -433,3 +436,6 @@ def flattener(image, pts, w, h):
     # warp = cv2.cvtColor(warp,cv2.COLOR_BGR2GRAY)
 
     return warp
+
+CardDetector
+

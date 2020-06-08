@@ -20,6 +20,8 @@ from PIL import Image
 # Define constants and initialize variables
 
 ## Camera settings
+import resize
+
 IM_WIDTH = 1280
 IM_HEIGHT = 720
 FRAME_RATE = 2
@@ -50,10 +52,10 @@ cam_quit = 0  # Loop control variable
 
 # Begin capturing frames
 while cam_quit == 0:
-
+    resize.resize(path + '/training_imgs/IMG_0816.jpg')
     # Grab frame from video stream
     # image = videostream.read()
-    image = cv2.imread(path + '/training_imgs/kort4.jpg')
+    image = cv2.imread(path + '/training_imgs/temp-test.jpg')
     # Start timer (for calculating frame rate)
     t1 = cv2.getTickCount()
     # Pre-process camera image (gray, blur, and threshold it)
@@ -72,6 +74,7 @@ while cam_quit == 0:
 
         # For each contour detected:
         for i in range(len(cnts_sort)):
+            # print(cnt_is_card[i])
             if (cnt_is_card[i] == 1):
                 # Create a card object from the contour and append it to the list of cards.
                 # preprocess_card function takes the card contour and contour and
