@@ -54,6 +54,7 @@ def main():
 
     print("number of contours %d -> " % len(temp_contours))
 
+
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 

@@ -21,22 +21,22 @@ crop4 = (3*width/7, 0, 4*width/7, height/4)
 
 
 cropped_im = im.crop(crop1)
-# cropped_im.show()
+cropped_im.show()
 
 cropped_im = im.crop(crop2)
-# cropped_im.show()
+cropped_im.show()
 
 cropped_im = im.crop(crop3)
-# cropped_im.show()
+cropped_im.show()
 
 cropped_im = im.crop(crop4)
-# cropped_im.show()
+cropped_im.show()
 
 # Det her crop finder det kort der er nyt fra bunken.
 
 crop_newcard = (6*width/7, 0, 7*width/7, height/4)
 cropped_im = im.crop(crop_newcard)
-# cropped_im.show()
+cropped_im.show()
 
 # Sidste crops finder de 7 stabler på bordet.
 

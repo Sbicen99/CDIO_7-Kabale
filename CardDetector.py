@@ -34,7 +34,7 @@ font = cv2.FONT_HERSHEY_SIMPLEX
 # See VideoStream.py for VideoStream class definition
 ## IF USING USB CAMERA INSTEAD OF PICAMERA,
 ## CHANGE THE THIRD ARGUMENT FROM 1 TO 2 IN THE FOLLOWING LINE:
-videostream = VideoStream.VideoStream((IM_WIDTH, IM_HEIGHT), FRAME_RATE, 2, 0).start()
+# videostream = VideoStream.VideoStream((IM_WIDTH, IM_HEIGHT), FRAME_RATE, 2, 0).start()
 time.sleep(1)  # Give the camera time to warm up
 
 # Load the train rank and suit images
@@ -52,11 +52,10 @@ cam_quit = 0  # Loop control variable
 while cam_quit == 0:
 
     # Grab frame from video stream
-    image = videostream.read()
-
+    # image = videostream.read()
+    image = cv2.imread(path + '/training_imgs/test_kabale.jpg')
     # Start timer (for calculating frame rate)
     t1 = cv2.getTickCount()
-
     # Pre-process camera image (gray, blur, and threshold it)
     pre_proc = Cards.preprocces_image(image)
 
@@ -73,6 +72,7 @@ while cam_quit == 0:
 
         # For each contour detected:
         for i in range(len(cnts_sort)):
+            print(cnt_is_card[i])
             if (cnt_is_card[i] == 1):
                 # Create a card object from the contour and append it to the list of cards.
                 # preprocess_card function takes the card contour and contour and

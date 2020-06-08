@@ -127,9 +127,9 @@ def load_suits(filepath):
 def preprocess_imageOLD(image):
     """Returns a grayed, blurred, and adaptively thresholded camera image."""
 
-    # gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
-    gray = image
-    blur = cv2.GaussianBlur(gray, (5, 5), 0)
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    # gray = image
+    blur = cv2.GaussianBlur(gray, (9, 9), 0)
 
     # The best threshold level depends on the ambient lighting conditions.
     # For bright lighting, a high threshold must be used to isolate the cards
@@ -226,13 +226,31 @@ def preprocess_card(contour, image):
     # Sample known white pixel intensity to determine good threshold level
     white_level = Qcorner_zoom[15, int((CORNER_WIDTH * 4) / 2)]
     thresh_level = white_level - CARD_THRESH
-    if (thresh_level <= 0):
+
+
+    #if (thresh_level <= 0): # Det her er den originale linje men den giver en fejl.
+    if (thresh_level.any):
         thresh_level = 1
-    retval, query_thresh = cv2.threshold(Qcorner_zoom, thresh_level, 255, cv2.THRESH_BINARY_INV)
+
+
+    cv2.imshow('Qcorner', Qcorner_zoom)
+
+
+    (retval, query_thresh) = cv2.threshold(Qcorner_zoom, 127, 255, cv2.THRESH_BINARY_INV)
+
+    cv2.imshow('query thresh', query_thresh)
+
+    query_thresh = cv2.cvtColor(query_thresh, cv2.COLOR_BGR2GRAY)
+
+    cv2.imshow('query thresh after', query_thresh)
 
     # Split in to top and bottom half (top shows rank, bottom shows suit)
     Qrank = query_thresh[20:185, 0:128]
     Qsuit = query_thresh[186:336, 0:128]
+
+    cv2.imshow('Qrank thresh', Qrank)
+    cv2.imshow('Qsuit thresh', Qsuit)
+
 
     # Find rank contour and bounding rectangle, isolate and find largest contour
     Qrank_cnts, hier = cv2.findContours(Qrank, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -245,6 +263,7 @@ def preprocess_card(contour, image):
         Qrank_roi = Qrank[y1:y1 + h1, x1:x1 + w1]
         Qrank_sized = cv2.resize(Qrank_roi, (RANK_WIDTH, RANK_HEIGHT), 0, 0)
         qCard.rank_img = Qrank_sized
+
 
     # Find suit contour and bounding rectangle, isolate and find largest contour
     Qsuit_cnts, hier = cv2.findContours(Qsuit, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
