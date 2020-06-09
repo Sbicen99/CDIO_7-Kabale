@@ -1,6 +1,9 @@
+import os
+
 from PIL import Image
 from resizeimage import resizeimage
-import os
+import numpy as np
+import cv2
 
 path = os.path.dirname(os.path.abspath(__file__))
 

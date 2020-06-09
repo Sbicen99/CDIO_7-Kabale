@@ -6,15 +6,13 @@
 # various steps of the card detection algorithm
 
 
+import cv2
 # Import necessary packages
 import numpy as np
-import cv2
-import time
 
 ### Constants ###
 
 # Adaptive threshold levels
-import ChangingImage
 
 BKG_THRESH = 60
 CARD_THRESH = 30
@@ -98,7 +96,6 @@ def load_ranks(filepath):
     train_ranks = []
     i = 0
 
-
     for Rank in ['Ace', 'Ace_g', 'Ace_ga', 'Ace_gb',
                  'Two', 'Two_g',
                  'Three', 'Three_g',
@@ -112,7 +109,6 @@ def load_ranks(filepath):
                  'Jack', 'Jack_g',
                  'Queen', 'Queen_g',
                  'King', 'King_g']:
-
         train_ranks.append(Train_ranks())
         train_ranks[i].name = Rank
         filename = Rank + '.jpg'
@@ -247,11 +243,9 @@ def preprocess_card(contour, image):
     white_level = Qcorner_zoom[15, int((CORNER_WIDTH * 4) / 2)]
     thresh_level = white_level - CARD_THRESH
 
-
-    #if (thresh_level <= 0): # Det her er den originale linje men den giver en fejl.
+    # if (thresh_level <= 0): # Det her er den originale linje men den giver en fejl.
     if (thresh_level.any):
         thresh_level = 1
-
 
     cv2.imshow('Qcorner', Qcorner_zoom)
 
@@ -263,16 +257,15 @@ def preprocess_card(contour, image):
 
     cv2.imshow('query thresh', im_bw)
 
-#    query_thresh_rank = cv2.cvtColor(thresh, cv2.COLOR_BGR2GRAY)
-#    query_thresh_suit = cv2.cvtColor(thresh, cv2.COLOR_BGR2GRAY)
+    #    query_thresh_rank = cv2.cvtColor(thresh, cv2.COLOR_BGR2GRAY)
+    #    query_thresh_suit = cv2.cvtColor(thresh, cv2.COLOR_BGR2GRAY)
 
     # Split in to top and bottom half (top shows rank, bottom shows suit)
     Qrank = im_bw[20:190, 0:135]
     Qsuit = im_bw[150:336, 0:135]
 
-    #cv2.imshow('Qrank thresh', Qrank)
-    #cv2.imshow('Qsuit thresh', Qsuit)
-
+    # cv2.imshow('Qrank thresh', Qrank)
+    # cv2.imshow('Qsuit thresh', Qsuit)
 
     # Find rank contour and bounding rectangle, isolate and find largest contour
     Qrank_cnts, hier = cv2.findContours(Qrank, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -286,8 +279,6 @@ def preprocess_card(contour, image):
         Qrank_sized = cv2.resize(Qrank_roi, (RANK_WIDTH, RANK_HEIGHT), 0, 0)
         qCard.rank_img = Qrank_sized
         cv2.imshow('qCard.rank_img', qCard.rank_img)
-
-
 
     # Find suit contour and bounding rectangle, isolate and find largest contour
     Qsuit_cnts, hier = cv2.findContours(Qsuit, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -451,5 +442,3 @@ def flattener(image, pts, w, h):
     # warp = cv2.cvtColor(warp,cv2.COLOR_BGR2GRAY)
 
     return warp
-
-

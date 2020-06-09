@@ -1,12 +1,10 @@
 # Import necessary packages
-import cv2
-import numpy as np
-import time
 import os
-import Cards
-import VideoStream
+
+import cv2
 from PIL import Image
 
+import Cards
 
 image = Image.open('training_imgs/1_image.png')
 
@@ -54,7 +52,6 @@ if len(cnts_sort) != 0:
             for i in range(len(cards)):
                 temp_cnts.append(cards[i].contour)
             cv2.drawContours(image, temp_cnts, -1, (255, 0, 0), 2)
-
 
 # Finally, display the image with the identified cards!
 cv2.imshow("Card Detector", image)
