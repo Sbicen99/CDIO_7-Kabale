@@ -12,7 +12,7 @@ import time
 # Import necessary packages
 import cv2
 from imutils.video import videostream
-import resize
+
 import Cards
 
 ## Camera settings
@@ -21,7 +21,6 @@ import Cards
 # Define constants and initialize variables
 
 ## Camera settings
-
 
 IM_WIDTH = 1280
 IM_HEIGHT = 720
@@ -53,11 +52,10 @@ train_suits = Cards.load_suits(path + '/card_Imgs/suits/')
 
 cam_quit = 0  # Loop control variable
 
-
 input_from_user = input("If you want to use computer webcam press 1, "
                         "for IP Cam Server press ENTER ")
 if input_from_user == '1':
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(0)
 else:
     pasted_URL = input("Paste the IP Camera Server URL ")
     cap = cv2.VideoCapture(
@@ -65,10 +63,13 @@ else:
 
 # Begin capturing frames
 while cam_quit == 0:
-    resize.resize(path + '/training_imgs/IMG_0817.jpg')
+    ##### resize.resize(path + '/training_imgs/IMG_0817.jpg')
     # Grab frame from video stream
-    # image = videostream.read()
-    image = cv2.imread(path + '/training_imgs/temp-test.jpg')
+    ###### image = videostream.read()
+    ###### image = cv2.imread(path + '/training_imgs/temp-test.jpg')
+
+    ret, frame = cap.read()
+
     # Start timer (for calculating frame rate)
     t1 = cv2.getTickCount()
     # Pre-process camera image (gray, blur, and threshold it)
@@ -148,4 +149,4 @@ while cam_quit == 0:
 # Close all windows and close the IP Camera video stream.
 cap.release()
 cv2.destroyAllWindows()
-videostream.stop()
+
