@@ -1,5 +1,6 @@
 import cv2
 import imutils
+import numpy
 
 import Cards
 
@@ -25,6 +26,15 @@ def main():
         dilate = Cards.preprocces_image(frame)
 
         contours, hierarchy = cv2.findContours(dilate, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        corners = cv2.goodFeaturesToTrack(image, 1000, 0.1, 20, 4)
+        if corners is not None:
+            corners = numpy.int0(corners)
+            for corner in corners:
+                set = corner.ravel()
+
+                x,y = set
+                cv2.circle(print_frame, (x,y), 5, (0,0,255), -1)
 
         temp_contours = []
 

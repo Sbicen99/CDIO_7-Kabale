@@ -76,7 +76,7 @@ while cam_quit == 0:
     pre_proc = Cards.preprocces_image(frame)
 
     # Find and sort the contours of all cards in the image (query cards)
-    cnts_sort, cnt_is_card = Cards.find_cards(pre_proc)
+    cnts_sort, cnt_is_card, crns = Cards.find_cards(pre_proc)
 
     # If there are no contours, do nothing
     if len(cnts_sort) != 0:
@@ -112,6 +112,13 @@ while cam_quit == 0:
             for i in range(len(cards)):
                 temp_cnts.append(cards[i].contour)
             cv2.drawContours(frame, temp_cnts, -1, (255, 0, 0), 2)
+
+            if crns is not None:
+                for corn in crns:
+                    print(corn)
+                    x = corn[0][0]
+                    y = corn[0][1]
+                    cv2.circle(frame, (x,y), 5, (0,0,255), -1)
 
     # Draw framerate in the corner of the image. Framerate is calculated at the end of the main loop,
     # so the first time this runs, framerate will be shown as 0.

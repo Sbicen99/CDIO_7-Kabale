@@ -192,7 +192,7 @@ def find_cards(thresh_image):
     # following criteria: 1) Smaller area than the maximum card size,
     # 2), bigger area than the minimum card size, 3) have no parents,
     # and 4) have four corners
-
+    crns = None
     for i in range(len(cnts_sort)):
         size = cv2.contourArea(cnts_sort[i])
         peri = cv2.arcLength(cnts_sort[i], True)
@@ -201,8 +201,9 @@ def find_cards(thresh_image):
         if ((size < CARD_MAX_AREA) and (size > CARD_MIN_AREA)
                 and (hier_sort[i][3] == -1) and (len(approx) == 4)):
             cnt_is_card[i] = 1
-
-    return cnts_sort, cnt_is_card
+            print(approx)
+            crns = approx
+    return cnts_sort, cnt_is_card, crns
 
 
 def preprocess_card(contour, image):
