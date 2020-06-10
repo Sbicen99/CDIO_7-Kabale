@@ -39,8 +39,6 @@ font = cv2.FONT_HERSHEY_SIMPLEX
 ## IF USING USB CAMERA INSTEAD OF PICAMERA,
 ## CHANGE THE THIRD ARGUMENT FROM 1 TO 2 IN THE FOLLOWING LINE:
 # videostream = VideoStream.VideoStream((IM_WIDTH, IM_HEIGHT), FRAME_RATE, 2, 0).start()
-time.sleep(1)  # Give the camera time to warm up
-
 # Load the train rank and suit images
 path = os.path.dirname(os.path.abspath(__file__))
 train_ranks = Cards.load_ranks(path + '/card_Imgs/')
@@ -55,7 +53,7 @@ cam_quit = 0  # Loop control variable
 input_from_user = input("If you want to use computer webcam press 1, "
                         "for IP Cam Server press ENTER ")
 if input_from_user == '1':
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(1)
 else:
     pasted_URL = input("Paste the IP Camera Server URL ")
     cap = cv2.VideoCapture(
@@ -69,6 +67,7 @@ while cam_quit == 0:
     ###### image = cv2.imread(path + '/training_imgs/temp-test.jpg')
 
     ret, frame = cap.read()
+    # frame = cv2.imread('training_imgs/stack.JPG')
 
     # Start timer (for calculating frame rate)
     t1 = cv2.getTickCount()
@@ -77,6 +76,9 @@ while cam_quit == 0:
 
     # Find and sort the contours of all cards in the image (query cards)
     cnts_sort, cnt_is_card, crns = Cards.find_cards(pre_proc)
+    if crns is not None:
+        Cards.CalculateCardPosition(crns)
+
 
     # If there are no contours, do nothing
     if len(cnts_sort) != 0:
@@ -113,13 +115,6 @@ while cam_quit == 0:
                 temp_cnts.append(cards[i].contour)
             cv2.drawContours(frame, temp_cnts, -1, (255, 0, 0), 2)
 
-            if crns is not None:
-                for corn in crns:
-                    print(corn)
-                    x = corn[0][0]
-                    y = corn[0][1]
-                    cv2.circle(frame, (x,y), 5, (0,0,255), -1)
-
     # Draw framerate in the corner of the image. Framerate is calculated at the end of the main loop,
     # so the first time this runs, framerate will be shown as 0.
     cv2.putText(frame, "FPS: " + str(int(frame_rate_calc)), (10, 26), font, 0.7, (255, 0, 255), 2, cv2.LINE_AA)
@@ -132,7 +127,7 @@ while cam_quit == 0:
     cv2.line(frame, (700, 0), (700, 450), RED_COLOR, 5)
 
     # Resize the frame.
-    scale_percent = 60  # percent of original size
+    scale_percent = 100  # percent of original size
     width = int(frame.shape[1] * scale_percent / 100)
     height = int(frame.shape[0] * scale_percent / 100)
     dim = (width, height)

@@ -9,6 +9,7 @@
 import cv2
 # Import necessary packages
 import numpy as np
+import math
 
 ### Constants ###
 
@@ -32,7 +33,7 @@ SUIT_HEIGHT = 100
 RANK_DIFF_MAX = 2000
 SUIT_DIFF_MAX = 700
 
-CARD_MAX_AREA = 120000
+CARD_MAX_AREA = 1200000
 CARD_MIN_AREA = 25000
 
 font = cv2.FONT_HERSHEY_SIMPLEX
@@ -201,8 +202,9 @@ def find_cards(thresh_image):
         if ((size < CARD_MAX_AREA) and (size > CARD_MIN_AREA)
                 and (hier_sort[i][3] == -1) and (len(approx) == 4)):
             cnt_is_card[i] = 1
-            print(approx)
+            # print(approx)
             crns = approx
+
     return cnts_sort, cnt_is_card, crns
 
 
@@ -443,3 +445,32 @@ def flattener(image, pts, w, h):
     # warp = cv2.cvtColor(warp,cv2.COLOR_BGR2GRAY)
 
     return warp
+
+def CalculateCardPosition(crns):
+    returnlist = [[0, 0], [0, 0]]
+    for corn in crns:
+        if (corn[0][1] > returnlist[0][1]):
+            returnlist[1][0] = returnlist[0][0]
+            returnlist[1][1] = returnlist[0][1]
+
+            returnlist[0][0] = corn[0][0]
+            returnlist[0][1] = corn[0][1]
+        elif (corn[0][1] > returnlist[1][1]):
+            returnlist[1][0] = corn[0][0]
+            returnlist[1][1] = corn[0][1]
+
+    x_difference = returnlist[0][0] - returnlist[1][0]
+    y_difference = returnlist[0][1] - returnlist[1][1]
+    # https://www.mathsisfun.com/algebra/distance-2-points.html
+    dist_betweenthem = np.sqrt((returnlist[0][0] - returnlist[1][0]) + (returnlist[0][1] - returnlist[1][1]))
+    height = dist_betweenthem * 1.5
+
+    myradians = math.atan2(targetY - gunY, targetX - gunX)
+    mydegrees = math.degrees(myradians)
+
+
+
+
+
+
+    return returnlist
