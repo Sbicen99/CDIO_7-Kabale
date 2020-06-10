@@ -8,19 +8,14 @@
 
 # Import necessary packages
 import cv2
-import numpy as np
 import time
 import os
 import Cards
-import VideoStream
-from PIL import Image
-
 
 ### ---- INITIALIZATION ---- ###
 # Define constants and initialize variables
 
 ## Camera settings
-import resize
 
 IM_WIDTH = 1280
 IM_HEIGHT = 720
@@ -36,13 +31,12 @@ font = cv2.FONT_HERSHEY_SIMPLEX
 # See VideoStream.py for VideoStream class definition
 ## IF USING USB CAMERA INSTEAD OF PICAMERA,
 ## CHANGE THE THIRD ARGUMENT FROM 1 TO 2 IN THE FOLLOWING LINE:
-# videostream = VideoStream.VideoStream((IM_WIDTH, IM_HEIGHT), FRAME_RATE, 2, 0).start()
 time.sleep(1)  # Give the camera time to warm up
 
 # Load the train rank and suit images
 path = os.path.dirname(os.path.abspath(__file__))
-train_ranks = Cards.load_ranks(path + '/card_Imgs/')
-train_suits = Cards.load_suits(path + '/card_Imgs/')
+train_ranks = Cards.load_ranks(path + '/card_Imgs/ranks/')
+train_suits = Cards.load_suits(path + '/card_Imgs/suits/')
 
 ### ---- MAIN LOOP ---- ###
 # The main loop repeatedly grabs frames from the video stream
@@ -50,16 +44,19 @@ train_suits = Cards.load_suits(path + '/card_Imgs/')
 
 cam_quit = 0  # Loop control variable
 
+cap = cv2.VideoCapture(1)
+
 # Begin capturing frames
 while cam_quit == 0:
-    resize.resize(path + '/training_imgs/IMG_0817.jpg')
-    # Grab frame from video stream
-    # image = videostream.read()
-    image = cv2.imread(path + '/training_imgs/temp-test.jpg')
+    # resize.resize(path + '/training_imgs/IMG_0818.jpg')
+
+    ret, image = cap.read()
+    cv2.imshow('unedited', image)
     # Start timer (for calculating frame rate)
     t1 = cv2.getTickCount()
     # Pre-process camera image (gray, blur, and threshold it)
     pre_proc = Cards.preprocces_image(image)
+
 
     # Find and sort the contours of all cards in the image (query cards)
     cnts_sort, cnt_is_card = Cards.find_cards(pre_proc)
@@ -106,7 +103,7 @@ while cam_quit == 0:
     # Finally, display the image with the identified cards!
     cv2.imshow("Card Detector", image)
 
-    # cv2.imshow("Preprossed image", Cards.preprocces_image(image))
+   # cv2.imshow("Preprossed image", Cards.preprocces_image(image))
 
     # Calculate framerate
     t2 = cv2.getTickCount()

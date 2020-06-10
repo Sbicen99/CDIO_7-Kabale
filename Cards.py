@@ -237,7 +237,7 @@ def preprocess_card(contour, image):
     # Warp card into 200x300 flattened image using perspective transform
     qCard.warp = flattener(image, pts, w, h)
 
-    # cv2.imshow("200x300 card", qCard.warp)
+    cv2.imshow("200x300 card", qCard.warp)
 
     # Grab corner of warped card image and do a 4x zoom
     Qcorner = qCard.warp[0:CORNER_HEIGHT, 0:CORNER_WIDTH]
@@ -253,7 +253,7 @@ def preprocess_card(contour, image):
         thresh_level = 1
 
 
-    cv2.imshow('Qcorner', Qcorner_zoom)
+    # cv2.imshow('Qcorner', Qcorner_zoom)
 
     gray_Qcorner = cv2.cvtColor(Qcorner_zoom, cv2.COLOR_BGR2GRAY)
 
@@ -267,8 +267,8 @@ def preprocess_card(contour, image):
 #    query_thresh_suit = cv2.cvtColor(thresh, cv2.COLOR_BGR2GRAY)
 
     # Split in to top and bottom half (top shows rank, bottom shows suit)
-    Qrank = im_bw[20:190, 0:135]
-    Qsuit = im_bw[150:336, 0:135]
+    Qrank = im_bw[20:180, 0:120]
+    Qsuit = im_bw[180:336, 0:120]
 
     #cv2.imshow('Qrank thresh', Qrank)
     #cv2.imshow('Qsuit thresh', Qsuit)

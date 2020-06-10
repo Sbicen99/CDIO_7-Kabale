@@ -50,7 +50,7 @@ class VideoStream:
         if self.PiOrUSB == 2:  # USB camera
             # Initialize the USB camera and the camera image stream
             # self.stream = cv2.VideoCapture(src)
-            self.stream = cv2.VideoCapture('http://192.168.0.13:8888')
+            self.stream = cv2.VideoCapture(1)
             # self.stream = cv2.VideoCapture(0)
 
             ret = self.stream.set(3, resolution[0])
