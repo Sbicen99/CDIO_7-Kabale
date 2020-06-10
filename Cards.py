@@ -14,7 +14,6 @@ import time
 ### Constants ###
 
 # Adaptive threshold levels
-import ChangingImage
 
 BKG_THRESH = 60
 CARD_THRESH = 30
@@ -224,6 +223,11 @@ def preprocess_card(contour, image):
     pts = np.float32(approx)
     qCard.corner_pts = pts
 
+    #for pts in qCard.corner_pts:
+     #   print(pts)
+
+
+    cv2.imshow('image', image)
     # Find width and height of card's bounding rectangle
     x, y, w, h = cv2.boundingRect(contour)
     qCard.width, qCard.height = w, h
@@ -236,6 +240,9 @@ def preprocess_card(contour, image):
 
     # Warp card into 200x300 flattened image using perspective transform
     qCard.warp = flattener(image, pts, w, h)
+
+
+
 
     # cv2.imshow("200x300 card", qCard.warp)
 
@@ -451,5 +458,3 @@ def flattener(image, pts, w, h):
     # warp = cv2.cvtColor(warp,cv2.COLOR_BGR2GRAY)
 
     return warp
-
-

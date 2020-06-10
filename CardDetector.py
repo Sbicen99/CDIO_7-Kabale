@@ -55,7 +55,7 @@ cam_quit = 0  # Loop control variable
 input_from_user = input("If you want to use computer webcam press 1, "
                         "for IP Cam Server press ENTER ")
 if input_from_user == '1':
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(1)
 else:
     pasted_URL = input("Paste the IP Camera Server URL ")
     cap = cv2.VideoCapture(

@@ -9,9 +9,7 @@ import Cards
 def main():
     card_location = 'training_imgs/'
 
-    test_images = [card_location + "1_image.png", card_location + "2_image.png", card_location + "3_image.png",
-                   card_location + "4_image.png", card_location + "5_image.png", card_location + "6_image.png",
-                   card_location + "7_image.png"]
+    test_images = [card_location + "temp-test.jpg"]
 
     for imagepath in test_images:
 
@@ -25,6 +23,8 @@ def main():
         dilate = Cards.preprocces_image(frame)
 
         contours, hierarchy = cv2.findContours(dilate, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        print(contours)
 
         temp_contours = []
 
