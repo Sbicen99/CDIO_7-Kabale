@@ -8,11 +8,9 @@
 
 import os
 import time
-
 # Import necessary packages
 import cv2
 from imutils.video import videostream
-
 import Cards
 
 ## Camera settings
