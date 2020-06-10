@@ -1,7 +1,6 @@
 import cv2
 import imutils
 import numpy as np
-import os
 
 import Cards
 
@@ -9,13 +8,14 @@ import Cards
 Printer alle slags kort ud; printer hvert kort der detekteres, ændrer baggrunden på billederne (edge detection) og farver billederne grå
 """
 
-def main():
-    cardPath = 'training_imgs/3_image.png'
 
+def main(image):
+    # cardPath = 'training_imgs/3_image.png'
 
-    image = cv2.imread(cardPath, cv2.IMREAD_GRAYSCALE)
+    print_frame = imutils.resize(image, 640, 640)
+
+    # image = cv2.imread(cardPath, cv2.IMREAD_GRAYSCALE)
     frame = imutils.resize(image, 640, 640)
-
 
     # Standard prerpoccesing of input
     dilate = Cards.preprocces_image(frame)
@@ -52,8 +52,5 @@ def main():
 
     print("number of contours %d -> " % len(temp_contours))
 
-
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-
-

@@ -6,20 +6,28 @@
 # from a PiCamera video feed.
 #
 
+import os
+import time
+
 # Import necessary packages
 import cv2
-import time
-import os
+from imutils.video import videostream
+import resize
 import Cards
+
+## Camera settings
 
 ### ---- INITIALIZATION ---- ###
 # Define constants and initialize variables
 
 ## Camera settings
 
+
 IM_WIDTH = 1280
 IM_HEIGHT = 720
 FRAME_RATE = 2
+BLUE_COLOR = (255, 0, 0)
+RED_COLOR = (0, 0, 255)
 
 ## Initialize calculated frame rate because it's calculated AFTER the first time it's displayed
 frame_rate_calc = 1
@@ -31,6 +39,7 @@ font = cv2.FONT_HERSHEY_SIMPLEX
 # See VideoStream.py for VideoStream class definition
 ## IF USING USB CAMERA INSTEAD OF PICAMERA,
 ## CHANGE THE THIRD ARGUMENT FROM 1 TO 2 IN THE FOLLOWING LINE:
+# videostream = VideoStream.VideoStream((IM_WIDTH, IM_HEIGHT), FRAME_RATE, 2, 0).start()
 time.sleep(1)  # Give the camera time to warm up
 
 # Load the train rank and suit images
@@ -44,19 +53,26 @@ train_suits = Cards.load_suits(path + '/card_Imgs/suits/')
 
 cam_quit = 0  # Loop control variable
 
-cap = cv2.VideoCapture(1)
+
+input_from_user = input("If you want to use computer webcam press 1, "
+                        "for IP Cam Server press ENTER ")
+if input_from_user == '1':
+    cap = cv2.VideoCapture(1)
+else:
+    pasted_URL = input("Paste the IP Camera Server URL ")
+    cap = cv2.VideoCapture(
+        f'{pasted_URL}/video')  # Ændres, hvis der skal testes. Skrives der '1' i stedet, vil webcam kunne anvendes
 
 # Begin capturing frames
 while cam_quit == 0:
-    # resize.resize(path + '/training_imgs/IMG_0818.jpg')
-
-    ret, image = cap.read()
-    cv2.imshow('unedited', image)
+    resize.resize(path + '/training_imgs/IMG_0817.jpg')
+    # Grab frame from video stream
+    # image = videostream.read()
+    image = cv2.imread(path + '/training_imgs/temp-test.jpg')
     # Start timer (for calculating frame rate)
     t1 = cv2.getTickCount()
     # Pre-process camera image (gray, blur, and threshold it)
-    pre_proc = Cards.preprocces_image(image)
-
+    pre_proc = Cards.preprocces_image(frame)
 
     # Find and sort the contours of all cards in the image (query cards)
     cnts_sort, cnt_is_card = Cards.find_cards(pre_proc)
@@ -78,14 +94,14 @@ while cam_quit == 0:
                 # determines the cards properties (corner points, etc). It generates a
                 # flattened 200x300 image of the card, and isolates the card's
                 # suit and rank from the image.
-                cards.append(Cards.preprocess_card(cnts_sort[i], image))
+                cards.append(Cards.preprocess_card(cnts_sort[i], frame))
 
                 # Find the best rank and suit match for the card.
                 cards[k].best_rank_match, cards[k].best_suit_match, cards[k].rank_diff, cards[
                     k].suit_diff = Cards.match_card(cards[k], train_ranks, train_suits)
 
                 # Draw center point and match result on the image.
-                image = Cards.draw_results(image, cards[k])
+                frame = Cards.draw_results(frame, cards[k])
                 k = k + 1
 
         # Draw card contours on image (have to do contours all at once or
@@ -94,16 +110,30 @@ while cam_quit == 0:
             temp_cnts = []
             for i in range(len(cards)):
                 temp_cnts.append(cards[i].contour)
-            cv2.drawContours(image, temp_cnts, -1, (255, 0, 0), 2)
+            cv2.drawContours(frame, temp_cnts, -1, (255, 0, 0), 2)
 
     # Draw framerate in the corner of the image. Framerate is calculated at the end of the main loop,
     # so the first time this runs, framerate will be shown as 0.
-    cv2.putText(image, "FPS: " + str(int(frame_rate_calc)), (10, 26), font, 0.7, (255, 0, 255), 2, cv2.LINE_AA)
+    cv2.putText(frame, "FPS: " + str(int(frame_rate_calc)), (10, 26), font, 0.7, (255, 0, 255), 2, cv2.LINE_AA)
+    cv2.putText(frame, "KORTBUNKE ", (10, 50), font, 0.7, (255, 0, 255), 2, cv2.LINE_AA)
+    cv2.putText(frame, "GRUNDBUNKER ", (720, 26), font, 0.7, (255, 0, 255), 2, cv2.LINE_AA)
+    cv2.putText(frame, "BYGGESTABLER ", (10, 500), font, 0.7, (255, 0, 255), 2, cv2.LINE_AA)
+
+    # Draw the lines into the frame for splitting the card piles. This may make it easier to identify cards.
+    cv2.line(frame, (0, 450), (frame.size, 450), BLUE_COLOR, 5)
+    cv2.line(frame, (700, 0), (700, 450), RED_COLOR, 5)
+
+    # Resize the frame.
+    scale_percent = 60  # percent of original size
+    width = int(frame.shape[1] * scale_percent / 100)
+    height = int(frame.shape[0] * scale_percent / 100)
+    dim = (width, height)
+    frame = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
 
     # Finally, display the image with the identified cards!
-    cv2.imshow("Card Detector", image)
+    cv2.imshow("Card Detector", frame)
 
-   # cv2.imshow("Preprossed image", Cards.preprocces_image(image))
+    # cv2.imshow("Preprossed image", Cards.preprocces_image(image))
 
     # Calculate framerate
     t2 = cv2.getTickCount()
@@ -115,6 +145,7 @@ while cam_quit == 0:
     if key == ord("q"):
         cam_quit = 1
 
-# Close all windows and close the PiCamera video stream.
+# Close all windows and close the IP Camera video stream.
+cap.release()
 cv2.destroyAllWindows()
 videostream.stop()
