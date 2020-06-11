@@ -77,7 +77,16 @@ while cam_quit == 0:
     # Find and sort the contours of all cards in the image (query cards)
     cnts_sort, cnt_is_card, crns = Cards.find_cards(pre_proc)
     if crns is not None:
-        Cards.CalculateCardPosition(crns)
+        crop1 = Cards.CalculateCardPosition(crns)
+        top_left_x = min([crop1[0][0], crop1[1][0], crop1[2][0], crop1[3][0]])
+        top_left_y = min([crop1[0][1], crop1[1][1], crop1[2][1], crop1[3][1]])
+        bot_right_x = max([crop1[0][0], crop1[1][0], crop1[2][0], crop1[3][0]])
+        bot_right_y = max([crop1[0][1], crop1[1][1], crop1[2][1], crop1[3][1]])
+        img = frame[top_left_y:bot_right_y, top_left_x:bot_right_x]
+        cv2.imshow('crop', img)
+
+
+
 
 
     # If there are no contours, do nothing
