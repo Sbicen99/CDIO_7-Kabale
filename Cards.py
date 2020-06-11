@@ -200,7 +200,7 @@ def find_cards(thresh_image):
         approx = cv2.approxPolyDP(cnts_sort[i], 0.01 * peri, True)
 
         if ((size < CARD_MAX_AREA) and (size > CARD_MIN_AREA)
-                and (hier_sort[i][3] == -1) and (len(approx) == 4)):
+                and (hier_sort[i][3] == -1) and (len(approx) == 2)):
             cnt_is_card[i] = 1
             # print(approx)
             crns = approx
