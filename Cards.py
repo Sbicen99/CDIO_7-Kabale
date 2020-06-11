@@ -468,7 +468,7 @@ def CalculateCardPosition(crns):
     else:
         vector = cornerlist[0] - cornerlist[1]
 
-    orthogonal_vector = [-1.52*vector[1], 1.52*vector[0]]
+    orthogonal_vector = [-1.5*vector[1], 1.5*vector[0]]
 
     topcorner1 = cornerlist[0] + orthogonal_vector
     topcorner2 = cornerlist[1] + orthogonal_vector
