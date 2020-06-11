@@ -447,7 +447,7 @@ def flattener(image, pts, w, h):
     return warp
 
 def CalculateCardPosition(crns):
-    cornerlist = [[0, 0], [0, 0]]
+    cornerlist = np.array([[0, 0], [0, 0]])
     for corn in crns:
         if (corn[0][1] > cornerlist[0][1]):
             cornerlist[1][0] = cornerlist[0][0]
@@ -459,43 +459,23 @@ def CalculateCardPosition(crns):
             cornerlist[1][0] = corn[0][0]
             cornerlist[1][1] = corn[0][1]
 
-    # Find forskellen mellem x og y
-    x_difference = cornerlist[0][0] - cornerlist[1][0]
-    y_difference = cornerlist[0][1] - cornerlist[1][1]
 
-    # Udregn det tredje punkt i vores trekant
-    y_highest = max(cornerlist[0][1], cornerlist[1][1])
-    x_value = None
 
-    if y_highest == cornerlist[0][1]:
-        x_value = cornerlist[1][0]
+    vector = None
+
+    if cornerlist[1][0] < cornerlist[0][0]:
+        vector = cornerlist[1] - cornerlist[0]
     else:
-        x_value = cornerlist[0][0]
+        vector = cornerlist[0] - cornerlist[1]
 
-    point = [x_value, y_highest]
+    orthogonal_vector = [-1.52*vector[1], 1.52*vector[0]]
 
+    topcorner1 = cornerlist[0] + orthogonal_vector
+    topcorner2 = cornerlist[1] + orthogonal_vector
 
+    print('corner1')
+    print(topcorner1)
+    print('corner2')
+    print(topcorner2)
 
-
-    # https://www.mathsisfun.com/algebra/distance-2-points.html
-    # Vi udregner længden imellem dem så vi kan finde lang siderne.
-    dist_betweenthem = np.sqrt((cornerlist[0][0] - cornerlist[1][0]) + (cornerlist[0][1] - cornerlist[1][1]))
-    height = dist_betweenthem * 1.5
-
-
-    bc = dist_betweenthem
-    ba = point - cornerlist[0][1]
-
-    cosine_angle = np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc))
-    angle = np.arccos(cosine_angle)
-
-    print
-    np.degrees(angle)
-
-
-
-
-
-
-
-    return cornerlist
+    return topcorner1, topcorner2
