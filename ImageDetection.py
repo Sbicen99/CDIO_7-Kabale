@@ -19,8 +19,10 @@ def main():
         print_img = cv2.imread(imagepath)
         print_frame = imutils.resize(print_img, 640, 640)
 
+
         image = cv2.imread(imagepath, cv2.IMREAD_GRAYSCALE)
         frame = imutils.resize(image, 640, 640)
+
 
         # Standard prerpoccesing of input
         dilate = Cards.preprocces_image(frame)
