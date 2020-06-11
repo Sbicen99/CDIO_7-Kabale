@@ -208,23 +208,23 @@ def find_cards(thresh_image):
     return cnts_sort, cnt_is_card, crns
 
 
-def preprocess_card(contour, image):
+def preprocess_card(image, pts):
     """Uses contour to find information about the query card. Isolates rank
     and suit images from the card."""
 
     # Initialize new Query_card object
     qCard = Query_card()
 
-    qCard.contour = contour
+    # qCard.contour = contour
 
     # Find perimeter of card and use it to approximate corner points
-    peri = cv2.arcLength(contour, True)
-    approx = cv2.approxPolyDP(contour, 0.01 * peri, True)
-    pts = np.float32(approx)
+    # peri = cv2.arcLength(contour, True)
+    # approx = cv2.approxPolyDP(contour, 0.01 * peri, True)
+    # pts = np.float32(approx)
     qCard.corner_pts = pts
 
     # Find width and height of card's bounding rectangle
-    x, y, w, h = cv2.boundingRect(contour)
+    x, y, w, h = cv2.boundingRect(pts)
     qCard.width, qCard.height = w, h
 
     # Find center point of card by taking x and y average of the four corners.
@@ -460,7 +460,6 @@ def CalculateCardPosition(crns):
             cornerlist[1][1] = corn[0][1]
 
 
-
     vector = None
 
     if cornerlist[1][0] < cornerlist[0][0]:
@@ -478,11 +477,5 @@ def CalculateCardPosition(crns):
     print('corner2')
     print(topcorner2)
 
-    returncorners = []
-    returncorners.append(cornerlist[0])
-    returncorners.append(cornerlist[1])
-    returncorners.append(topcorner1)
-    returncorners.append(topcorner2)
 
-
-    return returncorners
+    return topcorner1, topcorner2, cornerlist[0], cornerlist[1]
