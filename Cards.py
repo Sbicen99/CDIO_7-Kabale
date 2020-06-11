@@ -447,30 +447,55 @@ def flattener(image, pts, w, h):
     return warp
 
 def CalculateCardPosition(crns):
-    returnlist = [[0, 0], [0, 0]]
+    cornerlist = [[0, 0], [0, 0]]
     for corn in crns:
-        if (corn[0][1] > returnlist[0][1]):
-            returnlist[1][0] = returnlist[0][0]
-            returnlist[1][1] = returnlist[0][1]
+        if (corn[0][1] > cornerlist[0][1]):
+            cornerlist[1][0] = cornerlist[0][0]
+            cornerlist[1][1] = cornerlist[0][1]
 
-            returnlist[0][0] = corn[0][0]
-            returnlist[0][1] = corn[0][1]
-        elif (corn[0][1] > returnlist[1][1]):
-            returnlist[1][0] = corn[0][0]
-            returnlist[1][1] = corn[0][1]
+            cornerlist[0][0] = corn[0][0]
+            cornerlist[0][1] = corn[0][1]
+        elif (corn[0][1] > cornerlist[1][1]):
+            cornerlist[1][0] = corn[0][0]
+            cornerlist[1][1] = corn[0][1]
 
-    x_difference = returnlist[0][0] - returnlist[1][0]
-    y_difference = returnlist[0][1] - returnlist[1][1]
+    # Find forskellen mellem x og y
+    x_difference = cornerlist[0][0] - cornerlist[1][0]
+    y_difference = cornerlist[0][1] - cornerlist[1][1]
+
+    # Udregn det tredje punkt i vores trekant
+    y_highest = max(cornerlist[0][1], cornerlist[1][1])
+    x_value = None
+
+    if y_highest == cornerlist[0][1]:
+        x_value = cornerlist[1][0]
+    else:
+        x_value = cornerlist[0][0]
+
+    point = [x_value, y_highest]
+
+
+
+
     # https://www.mathsisfun.com/algebra/distance-2-points.html
-    dist_betweenthem = np.sqrt((returnlist[0][0] - returnlist[1][0]) + (returnlist[0][1] - returnlist[1][1]))
+    # Vi udregner længden imellem dem så vi kan finde lang siderne.
+    dist_betweenthem = np.sqrt((cornerlist[0][0] - cornerlist[1][0]) + (cornerlist[0][1] - cornerlist[1][1]))
     height = dist_betweenthem * 1.5
 
-    myradians = math.atan2(targetY - gunY, targetX - gunX)
-    mydegrees = math.degrees(myradians)
+
+    bc = dist_betweenthem
+    ba = point - cornerlist[0][1]
+
+    cosine_angle = np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc))
+    angle = np.arccos(cosine_angle)
+
+    print
+    np.degrees(angle)
 
 
 
 
 
 
-    return returnlist
+
+    return cornerlist
