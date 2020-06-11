@@ -75,15 +75,18 @@ while cam_quit == 0:
     pre_proc = Cards.preprocces_image(frame)
 
     # Find and sort the contours of all cards in the image (query cards)
-    cnts_sort, cnt_is_card, crns = Cards.find_cards(pre_proc)
-    if crns is not None:
-        crop1 = Cards.CalculateCardPosition(crns)
-        top_left_x = min([crop1[0][0], crop1[1][0], crop1[2][0], crop1[3][0]])
-        top_left_y = min([crop1[0][1], crop1[1][1], crop1[2][1], crop1[3][1]])
-        bot_right_x = max([crop1[0][0], crop1[1][0], crop1[2][0], crop1[3][0]])
-        bot_right_y = max([crop1[0][1], crop1[1][1], crop1[2][1], crop1[3][1]])
-        img = frame[top_left_y:bot_right_y, top_left_x:bot_right_x]
-        cv2.imshow('crop', img)
+    cnts_sort, cnt_is_card = Cards.find_cards(pre_proc)
+
+    #Deleted crns from the statement above
+
+    #if crns is not None:
+       # crop1 = Cards.CalculateCardPosition(crns)
+       # top_left_x = min([crop1[0][0], crop1[1][0], crop1[2][0], crop1[3][0]])
+       # top_left_y = min([crop1[0][1], crop1[1][1], crop1[2][1], crop1[3][1]])
+       # bot_right_x = max([crop1[0][0], crop1[1][0], crop1[2][0], crop1[3][0]])
+       #  bot_right_y = max([crop1[0][1], crop1[1][1], crop1[2][1], crop1[3][1]])
+       # img = frame[top_left_y:bot_right_y, top_left_x:bot_right_x]
+       #  cv2.imshow('crop', img)
 
 
 
@@ -132,11 +135,16 @@ while cam_quit == 0:
     cv2.putText(frame, "BYGGESTABLER ", (10, 500), font, 0.7, (255, 0, 255), 2, cv2.LINE_AA)
 
     # Draw the lines into the frame for splitting the card piles. This may make it easier to identify cards.
-    cv2.line(frame, (0, 450), (frame.size, 450), BLUE_COLOR, 5)
     cv2.line(frame, (700, 0), (700, 450), RED_COLOR, 5)
+    cv2.line(frame, (0, 450), (frame.size, 450), BLUE_COLOR, 5)
+    cv2.line(frame, (350, 0), (350, 450), RED_COLOR, 5)
+    for i in range(8):
+        ++i
+        cv2.line(frame, (i * 275, 450), (250, frame.size), RED_COLOR, 5)
+
 
     # Resize the frame.
-    scale_percent = 100  # percent of original size
+    scale_percent = 100 # percent of original size
     width = int(frame.shape[1] * scale_percent / 100)
     height = int(frame.shape[0] * scale_percent / 100)
     dim = (width, height)
