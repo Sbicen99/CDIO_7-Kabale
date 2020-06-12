@@ -78,8 +78,8 @@ while cam_quit == 0:
     cnts_sort, cnt_is_card, crns = Cards.find_cards(pre_proc)
 
     if crns is not None:
-        corner1, corner2, w, h, top1, top2, bot1, bot2 = Cards.CalculateCardPosition(crns)
-        cv2.imshow('projektering', frame)
+        w, h, top1, top2, bot1, bot2 = Cards.CalculateCardPosition(crns)
+        crns = [bot1, bot2, top1, top2]
         cv2.circle(frame, (int(top1[0]), int(top1[1])), 6, (0, 255, 255), -1)
         cv2.circle(frame, (int(top2[0]), int(top2[1])), 6, (0, 255, 255), -1)
         cv2.circle(frame, (int(bot1[0]), int(bot1[1])), 6, (0, 0, 255), -1)
