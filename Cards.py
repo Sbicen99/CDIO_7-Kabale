@@ -244,7 +244,7 @@ def preprocess_card(image, pts, w, h):
     Qcorner_zoom = cv2.resize(Qcorner, (0, 0), fx=4, fy=4)
 
     # Sample known white pixel intensity to determine good threshold level
-    #cv2.imshow('Qcorner', Qcorner_zoom)
+    cv2.imshow('Qcorner', Qcorner_zoom)
 
     gray_Qcorner = cv2.cvtColor(Qcorner_zoom, cv2.COLOR_BGR2GRAY)
 
@@ -454,23 +454,13 @@ def CalculateCardPosition(crns):
         vector = cornerlist[0] - cornerlist[1]
 
     # Den ortogonale vektor bruges til at udrenge approximationen for de to top punkter.
-    orthogonal_vector = [-1.5*vector[1], 1.5*vector[0]]
+    orthogonal_vector = [-1.52*vector[1], 1.52*vector[0]]
     # width
-    w = math.sqrt(math.pow(vector[0],2) + math.pow(vector[1],2))
+    w = math.sqrt(math.pow(vector[0], 2) + math.pow(vector[1], 2))
     # height
-    h = w*1.5
+    h = w*1.52
 
     topcorner1 = cornerlist[0] + orthogonal_vector
     topcorner2 = cornerlist[1] + orthogonal_vector
 
     return w, h, topcorner1, topcorner2, cornerlist[0], cornerlist[1]
-
-    if (cornerlist[0][0] >= cornerlist[0][1] ):
-        mincorner = min(topcorner1[0], topcorner2[0])
-        if (mincorner == topcorner1[0]):
-            return cornerlist[0], cornerlist[1], w, h, topcorner1, topcorner2, cornerlist[0], cornerlist[1]
-        else:
-            return
-    else:
-        maxcorner = max(topcorner1[1], topcorner2[1])
-        return cornerlist[1], cornerlist[0], w, h, topcorner1, topcorner2, cornerlist[0], cornerlist[1]
