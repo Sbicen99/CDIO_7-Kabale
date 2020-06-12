@@ -237,7 +237,21 @@ def preprocess_card(image, pts, w, h):
     cv2.imshow('before flattener', image)
     qCard.warp = flattener(image, pts)
 
+
+
     cv2.imshow("200x300 card", qCard.warp)
+
+    hsv = cv2.cvtColor(qCard.warp, cv2.COLOR_BGR2HSV)
+
+    lower_red = np.array([30, 150, 50])
+    upper_red = np.array([255, 255, 180])
+
+    mask = cv2.inRange(hsv, lower_red, upper_red)
+    res = cv2.bitwise_and(qCard.warp, qCard.warp, mask=mask)
+
+    edges = cv2.Canny(qCard.warp, 100, 200)
+    cv2.imshow('Edges', edges)
+
 
     # Grab corner of warped card image and do a 4x zoom
     Qcorner = qCard.warp[0:CORNER_HEIGHT, 0:CORNER_WIDTH]
@@ -454,11 +468,11 @@ def CalculateCardPosition(crns):
         vector = cornerlist[0] - cornerlist[1]
 
     # Den ortogonale vektor bruges til at udrenge approximationen for de to top punkter.
-    orthogonal_vector = [-1.52*vector[1], 1.52*vector[0]]
+    orthogonal_vector = [-1.7*vector[1], 1.7*vector[0]]
     # width
     w = math.sqrt(math.pow(vector[0], 2) + math.pow(vector[1], 2))
     # height
-    h = w*1.52
+    h = w*1.7
 
     topcorner1 = cornerlist[0] + orthogonal_vector
     topcorner2 = cornerlist[1] + orthogonal_vector
