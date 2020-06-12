@@ -68,6 +68,7 @@ while cam_quit == 0:
     ###### image = cv2.imread(path + '/training_imgs/temp-test.jpg')
 
     ret, frame = cap.read()
+    cv2.imshow('uredigeret', frame)
     # frame = cv2.imread('training_imgs/stack.JPG')
 
     # Start timer (for calculating frame rate)
