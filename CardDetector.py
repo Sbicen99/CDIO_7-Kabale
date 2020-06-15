@@ -8,6 +8,7 @@
 
 import os
 import time
+from numpy import loadtxt
 
 # Import necessary packages
 import cv2
@@ -49,7 +50,7 @@ train_suits = Cards.load_suits(path + '/Card_Imgs/Suits/')
 # and processes them to find and identify playing cards.
 
 cam_quit = 0  # Loop control variable
-
+dst = np.load('Callibration_files/callibration_gustav.npy') # load
 input_from_user = input("If you want to use computer webcam press 1, "
                         "for IP Cam Server press ENTER ")
 if input_from_user == '1':
@@ -67,12 +68,9 @@ while cam_quit == 0:
     ###### image = videostream.read()
     ###### image = cv2.imread(path + '/training_imgs/temp-test.jpg')
 
+    ret, frame = cap.read(dst)
+    frame = cv2.flip(frame, -1)
 
-    ret, frame = cap.read()
-    img = cv2.imread('calibresult.png')
-    img1 = cv2.imread('Callibration_test_img.JPG')
-    cv2.imshow('Kalibreret', img)
-    cv2.imshow('Ikke kalibreret', img)
     # frame = cv2.imread('hough_line.png')
     # frame = cv2.imread('training_imgs/stack.JPG')
 
