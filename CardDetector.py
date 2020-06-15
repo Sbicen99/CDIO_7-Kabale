@@ -67,8 +67,12 @@ while cam_quit == 0:
     ###### image = videostream.read()
     ###### image = cv2.imread(path + '/training_imgs/temp-test.jpg')
 
+
     ret, frame = cap.read()
-    # cv2.imshow('uredigeret', frame)
+    img = cv2.imread('calibresult.png')
+    img1 = cv2.imread('Callibration_test_img.JPG')
+    cv2.imshow('Kalibreret', img)
+    cv2.imshow('Ikke kalibreret', img)
     # frame = cv2.imread('hough_line.png')
     # frame = cv2.imread('training_imgs/stack.JPG')
 

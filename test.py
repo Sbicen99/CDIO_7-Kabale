@@ -45,7 +45,7 @@ for fname in images:
         img = cv2.drawChessboardCorners(img, CHECKERBOARD, corners2, ret)
 
     cv2.imshow('img', img)
-    cv2.waitKey(0)
+    # cv2.waitKey(0)
 
 cv2.destroyAllWindows()
 
@@ -67,3 +67,16 @@ print("rvecs : \n")
 print(rvecs)
 print("tvecs : \n")
 print(tvecs)
+
+img = cv2.imread('Callibration_test_img.JPG')
+h,  w = img.shape[:2]
+newcameramtx, roi=cv2.getOptimalNewCameraMatrix(mtx,dist,(w,h),1,(w,h))
+
+# undistort
+mapx,mapy = cv2.initUndistortRectifyMap(mtx,dist,None,newcameramtx,(w,h),5)
+dst = cv2.remap(img,mapx,mapy,cv2.INTER_LINEAR)
+
+# crop the image
+x,y,w,h = roi
+dst = dst[y:y+h, x:x+w]
+cv2.imwrite('calibresult.png',dst)
