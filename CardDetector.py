@@ -41,8 +41,8 @@ font = cv2.FONT_HERSHEY_SIMPLEX
 # videostream = VideoStream.VideoStream((IM_WIDTH, IM_HEIGHT), FRAME_RATE, 2, 0).start()
 # Load the train rank and suit images
 path = os.path.dirname(os.path.abspath(__file__))
-train_ranks = Cards.load_ranks(path + '/card_Imgs/')
-train_suits = Cards.load_suits(path + '/card_Imgs/')
+train_ranks = Cards.load_ranks(path + '/Card_Imgs/Ranks/')
+train_suits = Cards.load_suits(path + '/Card_Imgs/Suits/')
 
 ### ---- MAIN LOOP ---- ###
 # The main loop repeatedly grabs frames from the video stream
@@ -68,7 +68,7 @@ while cam_quit == 0:
     ###### image = cv2.imread(path + '/training_imgs/temp-test.jpg')
 
     ret, frame = cap.read()
-    cv2.imshow('uredigeret', frame)
+    # cv2.imshow('uredigeret', frame)
     # frame = cv2.imread('hough_line.png')
     # frame = cv2.imread('training_imgs/stack.JPG')
 
