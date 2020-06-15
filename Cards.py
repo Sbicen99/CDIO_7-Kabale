@@ -212,7 +212,6 @@ def find_cards(thresh_image):
             crns = approx
             rect = cv2.minAreaRect(cnts_sort[i])
             box = cv2.boxPoints(rect)
-            print(box)
 
     return cnts_sort, cnt_is_card, box
 
@@ -243,7 +242,6 @@ def preprocess_card(image, pts, w, h):
     qCard.center = [cent_x, cent_y]
 
     # Warp card into 200x300 flattened image using perspective transform
-    # cv2.imshow('before flattener', image)
     qCard.warp = flattener(image, pts)
 
 
@@ -256,9 +254,6 @@ def preprocess_card(image, pts, w, h):
 
     mask = cv2.inRange(hsv, lower_red, upper_red)
     res = cv2.bitwise_and(qCard.warp, qCard.warp, mask=mask)
-
-    edges = cv2.Canny(qCard.warp, 100, 200)
-    cv2.imshow('Edges', edges)
 
 
     # Grab corner of warped card image and do a 4x zoom
@@ -284,8 +279,8 @@ def preprocess_card(image, pts, w, h):
     Qrank = im_bw[20:190, 0:135]
     Qsuit = im_bw[150:336, 0:135]
 
-    #cv2.imshow('Qrank thresh', Qrank)
-    # cv2.imshow('Qsuit thresh', Qsuit)
+    cv2.imshow('Qrank thresh', Qrank)
+    cv2.imshow('Qsuit thresh', Qsuit)
 
     # Find rank contour and bounding rectangle, isolate and find largest contour
     Qrank_cnts, hier = cv2.findContours(Qrank, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)

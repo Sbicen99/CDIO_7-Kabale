@@ -68,6 +68,7 @@ while cam_quit == 0:
     ###### image = cv2.imread(path + '/training_imgs/temp-test.jpg')
 
     ret, frame = cap.read()
+    frame = cv2.flip(frame, -1)
     cv2.imshow('uredigeret', frame)
     # frame = cv2.imread('hough_line.png')
     # frame = cv2.imread('training_imgs/stack.JPG')
