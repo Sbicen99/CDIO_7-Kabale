@@ -10,6 +10,7 @@ import cv2
 # Import necessary packages
 import numpy as np
 import math
+import os
 
 ### Constants ###
 
@@ -97,24 +98,13 @@ def load_ranks(filepath):
     train_ranks = []
     i = 0
 
-    for Rank in ['Ace', 'Ace_g', 'Ace_ga', 'Ace_gb',
-                 'Two', 'Two_g',
-                 'Three', 'Three_g',
-                 'Four', 'Four_g',
-                 'Five', 'Five_g',
-                 'Six', 'Six_g',
-                 'Seven', 'Seven_g',
-                 'Eight', 'Eight_g',
-                 'Nine', 'Nine_g',
-                 'Ten', 'Ten_g',
-                 'Jack', 'Jack_g',
-                 'Queen', 'Queen_g',
-                 'King', 'King_g']:
-        train_ranks.append(Train_ranks())
-        train_ranks[i].name = Rank
-        filename = Rank + '.jpg'
-        train_ranks[i].img = cv2.imread(filepath + filename, cv2.IMREAD_GRAYSCALE)
-        i = i + 1
+    for Rank in os.listdir(filepath):
+        if Rank.endswith(".jpg"):
+            train_ranks.append(Train_ranks())
+            train_ranks[i].name = os.path.splitext(Rank)[0]
+            filename = Rank
+            train_ranks[i].img = cv2.imread(filepath + filename, cv2.IMREAD_GRAYSCALE)
+            i = i + 1
 
     return train_ranks
 
@@ -126,15 +116,13 @@ def load_suits(filepath):
     train_suits = []
     i = 0
 
-    for Suit in ['Spades', 'Spades_ga', 'Spades_gb',
-                 'Diamonds', 'Diamonds_g',
-                 'Clubs', 'Clubs_g', 'Clubs_ga',
-                 'Hearts', 'Hearts_g']:
-        train_suits.append(Train_suits())
-        train_suits[i].name = Suit
-        filename = Suit + '.jpg'
-        train_suits[i].img = cv2.imread(filepath + filename, cv2.IMREAD_GRAYSCALE)
-        i = i + 1
+    for Suit in os.listdir(filepath):
+        if Suit.endswith(".jpg"):
+            train_suits.append(Train_suits())
+            train_suits[i].name = os.path.splitext(Suit)[0]
+            filename = Suit
+            train_suits[i].img = cv2.imread(filepath + filename, cv2.IMREAD_GRAYSCALE)
+            i = i + 1
 
     return train_suits
 
