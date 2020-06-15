@@ -172,6 +172,8 @@ def find_cards(thresh_image):
     cnts, hier = cv2.findContours(thresh_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     index_sort = sorted(range(len(cnts)), key=lambda i: cv2.contourArea(cnts[i]), reverse=True)
 
+
+
     # If there are no contours, do nothing
     if len(cnts) == 0:
         return [], []
@@ -180,6 +182,9 @@ def find_cards(thresh_image):
     cnts_sort = []
     hier_sort = []
     cnt_is_card = np.zeros(len(cnts), dtype=int)
+
+
+
 
     # Fill empty lists with sorted contour and sorted hierarchy. Now,
     # the indices of the contour list still correspond with those of
@@ -194,6 +199,7 @@ def find_cards(thresh_image):
     # 2), bigger area than the minimum card size, 3) have no parents,
     # and 4) have four corners
     crns = None
+    box = None
     for i in range(len(cnts_sort)):
         size = cv2.contourArea(cnts_sort[i])
         peri = cv2.arcLength(cnts_sort[i], True)
@@ -204,8 +210,11 @@ def find_cards(thresh_image):
             cnt_is_card[i] = 1
             # print(approx)
             crns = approx
+            rect = cv2.minAreaRect(cnts_sort[i])
+            box = cv2.boxPoints(rect)
+            print(box)
 
-    return cnts_sort, cnt_is_card, crns
+    return cnts_sort, cnt_is_card, box
 
 
 def preprocess_card(image, pts, w, h):
@@ -253,11 +262,13 @@ def preprocess_card(image, pts, w, h):
 
 
     # Grab corner of warped card image and do a 4x zoom
-    Qcorner = qCard.warp[0:CORNER_HEIGHT, 0:CORNER_WIDTH]
+    Qcorner = qCard.warp[300-CORNER_HEIGHT:295, 5:CORNER_WIDTH+5]
     Qcorner_zoom = cv2.resize(Qcorner, (0, 0), fx=4, fy=4)
 
     # Sample known white pixel intensity to determine good threshold level
-    # cv2.imshow('Qcorner', Qcorner_zoom)
+
+    Qcorner_zoom = cv2.flip(Qcorner_zoom, -1)
+    cv2.imshow('Qcorner', Qcorner_zoom)
 
     gray_Qcorner = cv2.cvtColor(Qcorner_zoom, cv2.COLOR_BGR2GRAY)
 
@@ -273,7 +284,7 @@ def preprocess_card(image, pts, w, h):
     Qrank = im_bw[20:190, 0:135]
     Qsuit = im_bw[150:336, 0:135]
 
-    # cv2.imshow('Qrank thresh', Qrank)
+    #cv2.imshow('Qrank thresh', Qrank)
     # cv2.imshow('Qsuit thresh', Qsuit)
 
     # Find rank contour and bounding rectangle, isolate and find largest contour
@@ -287,7 +298,7 @@ def preprocess_card(image, pts, w, h):
         Qrank_roi = Qrank[y1:y1 + h1, x1:x1 + w1]
         Qrank_sized = cv2.resize(Qrank_roi, (RANK_WIDTH, RANK_HEIGHT), 0, 0)
         qCard.rank_img = Qrank_sized
-        #cv2.imshow('qCard.rank_img', qCard.rank_img)
+        cv2.imshow('qCard.rank_img', qCard.rank_img)
 
     # Find suit contour and bounding rectangle, isolate and find largest contour
     Qsuit_cnts, hier = cv2.findContours(Qsuit, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -300,7 +311,7 @@ def preprocess_card(image, pts, w, h):
         Qsuit_roi = Qsuit[y2:y2 + h2, x2:x2 + w2]
         Qsuit_sized = cv2.resize(Qsuit_roi, (SUIT_WIDTH, SUIT_HEIGHT), 0, 0)
         qCard.suit_img = Qsuit_sized
-        #cv2.imshow('qCard.suit', qCard.suit_img)
+        cv2.imshow('qCard.suit', qCard.suit_img)
 
     return qCard
 
@@ -453,11 +464,11 @@ def CalculateCardPosition(crns):
     cornerlist = np.array([[0, 0], [0, 0]])
     # Finder de to højeste y værdier i vores array. De højeste yværdier er de nederste punkter.
     for corn in crns:
-        if corn[0][1] > cornerlist[0][1]:
+        if corn[1] > cornerlist[0][1]:
             cornerlist[1] = cornerlist[0]
-            cornerlist[0] = corn[0]
+            cornerlist[0] = corn
 
-        elif corn[0][1] > cornerlist[1][1]:
+        elif corn[1] > cornerlist[1][1]:
             cornerlist[1] = corn
 
     vector = None
