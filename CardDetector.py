@@ -41,8 +41,8 @@ time.sleep(1)  # Give the camera time to warm up
 
 # Load the train rank and suit images
 path = os.path.dirname(os.path.abspath(__file__))
-train_ranks = Cards.load_ranks(path + '/Card_Imgs/Ranks')
-train_suits = Cards.load_suits(path + '/Card_Imgs/Suits')
+train_ranks = Cards.load_ranks(path + '/Card_Imgs/Ranks/')
+train_suits = Cards.load_suits(path + '/Card_Imgs/Suits/')
 
 ### ---- MAIN LOOP ---- ###
 # The main loop repeatedly grabs frames from the video stream
