@@ -1,4 +1,4 @@
-############## Playing Card Detector Functions ###############
+# Playing Card Detector Functions #
 #
 # Author: Evan Juras
 # Date: 9/5/17
@@ -10,6 +10,7 @@ import cv2
 # Import necessary packages
 import numpy as np
 import os
+import re
 
 ### Constants ###
 
@@ -54,7 +55,7 @@ def preprocces_image(image):
     return dilate
 
 
-### Structures to hold query card and train card information ###
+# Structures to hold query card and train card information #
 
 class Query_card:
     """Structure to store information about query cards in the camera image."""
@@ -326,11 +327,17 @@ def match_card(qCard, train_ranks, train_suits):
     # Combine best rank match and best suit match to get query card's identity.
     # If the best matches have too high of a difference value, card identity
     # is still Unknown
-    if (best_rank_match_diff < RANK_DIFF_MAX):
+    if best_rank_match_diff < RANK_DIFF_MAX:
         best_rank_match_name = best_rank_name
 
-    if (best_suit_match_diff < SUIT_DIFF_MAX):
+    if best_suit_match_diff < SUIT_DIFF_MAX:
         best_suit_match_name = best_suit_name
+
+    best_suit_match_list = best_suit_match_name.split('_')
+    best_suit_match_name = best_suit_match_list[0]
+
+    best_rank_match_list = best_rank_match_name.split('_')
+    best_rank_match_name = best_rank_match_list[0]
 
     # Return the identiy of the card and the quality of the suit and rank match
     return best_rank_match_name, best_suit_match_name, best_rank_match_diff, best_suit_match_diff

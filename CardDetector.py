@@ -13,12 +13,12 @@ import cv2
 from imutils.video import videostream
 import Cards
 
-## Camera settings
+# Camera settings
 
-### ---- INITIALIZATION ---- ###
+# ---- INITIALIZATION ---- ###
 # Define constants and initialize variables
 
-## Camera settings
+# Camera settings
 
 IM_WIDTH = 1280
 IM_HEIGHT = 720
@@ -26,16 +26,16 @@ FRAME_RATE = 2
 BLUE_COLOR = (255, 0, 0)
 RED_COLOR = (0, 0, 255)
 
-## Initialize calculated frame rate because it's calculated AFTER the first time it's displayed
+# Initialize calculated frame rate because it's calculated AFTER the first time it's displayed
 frame_rate_calc = 1
 freq = cv2.getTickFrequency()
-## Define font to use
+# Define font to use
 font = cv2.FONT_HERSHEY_SIMPLEX
 # Initialize camera object and video feed from the camera. The video stream is set up
 # as a seperate thread that constantly grabs frames from the camera feed. 
 # See VideoStream.py for VideoStream class definition
-## IF USING USB CAMERA INSTEAD OF PICAMERA,
-## CHANGE THE THIRD ARGUMENT FROM 1 TO 2 IN THE FOLLOWING LINE:
+# IF USING USB CAMERA INSTEAD OF PICAMERA,
+# CHANGE THE THIRD ARGUMENT FROM 1 TO 2 IN THE FOLLOWING LINE:
 # videostream = VideoStream.VideoStream((IM_WIDTH, IM_HEIGHT), FRAME_RATE, 2, 0).start()
 time.sleep(1)  # Give the camera time to warm up
 
@@ -44,16 +44,16 @@ path = os.path.dirname(os.path.abspath(__file__))
 train_ranks = Cards.load_ranks(path + '/Card_Imgs/Ranks/')
 train_suits = Cards.load_suits(path + '/Card_Imgs/Suits/')
 
-### ---- MAIN LOOP ---- ###
+# ---- MAIN LOOP ---- ###
 # The main loop repeatedly grabs frames from the video stream
 # and processes them to find and identify playing cards.
 
 cam_quit = 0  # Loop control variable
 
-input_from_user = input("If you want to use computer webcam press 1, "
+input_from_user = input("If you want to use computer webcam press 0, "
                         "for IP Cam Server press ENTER ")
-if input_from_user == '1':
-    cap = cv2.VideoCapture(1)
+if input_from_user == '0':
+    cap = cv2.VideoCapture(0)
 else:
     pasted_URL = input("Paste the IP Camera Server URL ")
     cap = cv2.VideoCapture(
@@ -61,10 +61,10 @@ else:
 
 # Begin capturing frames
 while cam_quit == 0:
-    ##### resize.resize(path + '/training_imgs/IMG_0817.jpg')
+    # resize.resize(path + '/training_imgs/IMG_0817.jpg')
     # Grab frame from video stream
-    ###### image = videostream.read()
-    ###### image = cv2.imread(path + '/training_imgs/temp-test.jpg')
+    # image = videostream.read()
+    # image = cv2.imread(path + '/training_imgs/temp-test.jpg')
 
     ret, frame = cap.read()
 
@@ -87,7 +87,7 @@ while cam_quit == 0:
         # For each contour detected:
         for i in range(len(cnts_sort)):
             # print(cnt_is_card[i])
-            if (cnt_is_card[i] == 1):
+            if cnt_is_card[i] == 1:
                 # Create a card object from the contour and append it to the list of cards.
                 # preprocess_card function takes the card contour and contour and
                 # determines the cards properties (corner points, etc). It generates a
@@ -105,7 +105,7 @@ while cam_quit == 0:
 
         # Draw card contours on image (have to do contours all at once or
         # they do not show up properly for some reason)
-        if (len(cards) != 0):
+        if len(cards) != 0:
             temp_cnts = []
             for i in range(len(cards)):
                 temp_cnts.append(cards[i].contour)
@@ -147,4 +147,3 @@ while cam_quit == 0:
 # Close all windows and close the IP Camera video stream.
 cap.release()
 cv2.destroyAllWindows()
-

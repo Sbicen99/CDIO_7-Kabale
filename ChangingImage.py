@@ -44,7 +44,7 @@ def main():
             x, y, w, h = cv2.boundingRect(card)
 
             # Flatten the card and convert it to 200x300
-            warp = Cards.flattener(frame, pts, w, h)
+            warp = Cards.flattener(frame, pts)
 
             cv2.imshow(str(area), warp)
 
@@ -56,6 +56,9 @@ def main():
 
     cv2.waitKey(0)
     cv2.destroyAllWindows()
+
+
+main()
 
 
 main()
