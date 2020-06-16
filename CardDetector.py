@@ -9,7 +9,7 @@
 import os
 import time
 from numpy import loadtxt
-import cal2
+import camera_callibration
 # Import necessary packages
 import cv2
 from imutils.video import videostream
@@ -50,8 +50,10 @@ train_suits = Cards.load_suits(path + '/Card_Imgs/Suits/')
 # and processes them to find and identify playing cards.
 
 cam_quit = 0  # Loop control variable
+# Henter kamera kallibrerings variable.
 mtx = np.load('Callibration_files/mtx_gustav.npy')
 dist = np.load('Callibration_files/dist_gustav.npy')
+
 input_from_user = input("If you want to use computer webcam press 1, "
                         "for IP Cam Server press ENTER ")
 if input_from_user == '1':
@@ -68,7 +70,8 @@ while cam_quit == 0:
     # Grab frame from video stream
     ret, frame = cap.read()
     frame = cv2.flip(frame, -1)
-
+    # Her bruges kamera perspektivet, den her linje og ned til frame = dst[y:y + h, x:x + w] skal udkommenteres
+    # Hvis du ikke bruger din egen kamera kallibration.
     h, w = frame.shape[:2]
     newcameramtx, roi = cv2.getOptimalNewCameraMatrix(mtx, dist, (w, h), 1, (w, h))
 
@@ -78,11 +81,9 @@ while cam_quit == 0:
 
     # crop the image
     x, y, w, h = roi
-    #cv2.imwrite('calibresult.png', dst[y:y + h, x:x + w])
-
+    # Framen bliver nu ændret med vores variable.
     frame = dst[y:y + h, x:x + w]
 
-    #frame = cv2.imread('calibresult.png')
     # Start timer (for calculating frame rate)
     t1 = cv2.getTickCount()
     # Pre-process camera image (gray, blur, and threshold it)
