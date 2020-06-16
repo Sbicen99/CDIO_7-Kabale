@@ -98,11 +98,12 @@ def load_ranks(filepath):
     i = 0
 
     for Rank in os.listdir(filepath):
-        train_ranks.append(Train_ranks())
-        train_ranks[i].name = os.path.splitext(Rank)[0]
-        filename = Rank
-        train_ranks[i].img = cv2.imread(filepath + filename, cv2.IMREAD_GRAYSCALE)
-        i = i + 1
+        if Rank.endswith(".jpg"):
+            train_ranks.append(Train_ranks())
+            train_ranks[i].name = os.path.splitext(Rank)[0]
+            filename = Rank
+            train_ranks[i].img = cv2.imread(filepath + filename, cv2.IMREAD_GRAYSCALE)
+            i = i + 1
 
     return train_ranks
 
@@ -115,11 +116,12 @@ def load_suits(filepath):
     i = 0
 
     for Suit in os.listdir(filepath):
-        train_suits.append(Train_suits())
-        train_suits[i].name = os.path.splitext(Suit)[0]
-        filename = Suit
-        train_suits[i].img = cv2.imread(filepath + filename, cv2.IMREAD_GRAYSCALE)
-        i = i + 1
+        if Suit.endswith(".jpg"):
+            train_suits.append(Train_suits())
+            train_suits[i].name = os.path.splitext(Suit)[0]
+            filename = Suit
+            train_suits[i].img = cv2.imread(filepath + filename, cv2.IMREAD_GRAYSCALE)
+            i = i + 1
 
     return train_suits
 
