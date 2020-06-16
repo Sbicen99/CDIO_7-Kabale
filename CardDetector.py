@@ -41,8 +41,8 @@ time.sleep(1)  # Give the camera time to warm up
 
 # Load the train rank and suit images
 path = os.path.dirname(os.path.abspath(__file__))
-train_ranks = Cards.load_ranks(path + '/card_Imgs/')
-train_suits = Cards.load_suits(path + '/card_Imgs/')
+train_ranks = Cards.load_ranks(path + '/Card_Imgs/Ranks')
+train_suits = Cards.load_suits(path + '/Card_Imgs/Suits')
 
 ### ---- MAIN LOOP ---- ###
 # The main loop repeatedly grabs frames from the video stream
@@ -53,7 +53,7 @@ cam_quit = 0  # Loop control variable
 input_from_user = input("If you want to use computer webcam press 1, "
                         "for IP Cam Server press ENTER ")
 if input_from_user == '1':
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(1)
 else:
     pasted_URL = input("Paste the IP Camera Server URL ")
     cap = cv2.VideoCapture(
@@ -132,7 +132,7 @@ while cam_quit == 0:
     # Finally, display the image with the identified cards!
     cv2.imshow("Card Detector", frame)
 
-    # cv2.imshow("Preprossed image", Cards.preprocces_image(image))
+    # cv2.imshow("Preprossed image", Cards.preprocces_image(frame))
 
     # Calculate framerate
     t2 = cv2.getTickCount()
