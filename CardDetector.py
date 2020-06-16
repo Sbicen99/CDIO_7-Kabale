@@ -9,7 +9,7 @@
 import os
 import time
 from numpy import loadtxt
-
+import cal2
 # Import necessary packages
 import cv2
 from imutils.video import videostream
@@ -50,7 +50,8 @@ train_suits = Cards.load_suits(path + '/Card_Imgs/Suits/')
 # and processes them to find and identify playing cards.
 
 cam_quit = 0  # Loop control variable
-dst = np.load('Callibration_files/callibration_gustav.npy') # load
+mtx = np.load('Callibration_files/mtx_gustav.npy')
+dist = np.load('Callibration_files/dist_gustav.npy')
 input_from_user = input("If you want to use computer webcam press 1, "
                         "for IP Cam Server press ENTER ")
 if input_from_user == '1':
@@ -63,17 +64,25 @@ else:
 
 # Begin capturing frames
 while cam_quit == 0:
-    ##### resize.resize(path + '/training_imgs/IMG_0817.jpg')
-    # Grab frame from video stream
-    ###### image = videostream.read()
-    ###### image = cv2.imread(path + '/training_imgs/temp-test.jpg')
 
-    ret, frame = cap.read(dst)
+    # Grab frame from video stream
+    ret, frame = cap.read()
     frame = cv2.flip(frame, -1)
 
-    # frame = cv2.imread('hough_line.png')
-    # frame = cv2.imread('training_imgs/stack.JPG')
+    h, w = frame.shape[:2]
+    newcameramtx, roi = cv2.getOptimalNewCameraMatrix(mtx, dist, (w, h), 1, (w, h))
 
+    # undistort
+    mapx, mapy = cv2.initUndistortRectifyMap(mtx, dist, None, newcameramtx, (w, h), 5)
+    dst = cv2.remap(frame, mapx, mapy, cv2.INTER_LINEAR)
+
+    # crop the image
+    x, y, w, h = roi
+    #cv2.imwrite('calibresult.png', dst[y:y + h, x:x + w])
+
+    frame = dst[y:y + h, x:x + w]
+
+    #frame = cv2.imread('calibresult.png')
     # Start timer (for calculating frame rate)
     t1 = cv2.getTickCount()
     # Pre-process camera image (gray, blur, and threshold it)
@@ -81,7 +90,7 @@ while cam_quit == 0:
     # Find and sort the contours of all cards in the image (query cards)
     cnts_sort, cnt_is_card, crns = Cards.find_cards(pre_proc)
 
-    if crns is not None:
+    if len(crns) != 0:
         w, h, top1, top2, bot1, bot2 = Cards.CalculateCardPosition(crns)
         crns = [bot1, bot2, top1, top2]
         cv2.circle(frame, (int(top1[0]), int(top1[1])), 6, (0, 255, 255), -1)

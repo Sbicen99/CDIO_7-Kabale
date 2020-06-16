@@ -164,7 +164,7 @@ def find_cards(thresh_image):
 
     # If there are no contours, do nothing
     if len(cnts) == 0:
-        return [], []
+        return [], [], []
 
     # Otherwise, initialize empty sorted contour and hierarchy lists
     cnts_sort = []
@@ -186,8 +186,8 @@ def find_cards(thresh_image):
     # following criteria: 1) Smaller area than the maximum card size,
     # 2), bigger area than the minimum card size, 3) have no parents,
     # and 4) have four corners
-    crns = None
-    box = None
+    crns = 0
+    box = []
     for i in range(len(cnts_sort)):
         size = cv2.contourArea(cnts_sort[i])
         peri = cv2.arcLength(cnts_sort[i], True)
@@ -461,11 +461,11 @@ def CalculateCardPosition(crns):
         vector = cornerlist[0] - cornerlist[1]
 
     # Den ortogonale vektor bruges til at udrenge approximationen for de to top punkter.
-    orthogonal_vector = [-1.5*vector[1], 1.5*vector[0]]
+    orthogonal_vector = [-1.45*vector[1], 1.45*vector[0]]
     # width
     w = math.sqrt(math.pow(vector[0], 2) + math.pow(vector[1], 2))
     # height
-    h = w*1.5
+    h = w*1.45
 
     topcorner1 = cornerlist[0] + orthogonal_vector
     topcorner2 = cornerlist[1] + orthogonal_vector

@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 '''
+Sourcekode: https://www.learnopencv.com/camera-calibration-using-opencv/
+
 For at lave jeres egen kallibrations fil skal i:
 Først printe et såkaldt "Callibration checker board, de kan fidnes på google.
 Herefter skal i tage billeder af jeres board, billederne skal tages enten hvor jeres board altid er i den samme position,
