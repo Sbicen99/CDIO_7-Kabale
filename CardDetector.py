@@ -96,7 +96,7 @@ while cam_quit == 0:
     subimages = extractimages.getimages(frame)
 
     cards = []
-
+    k = 0
     for subimage in subimages:
         # Find and sort the contours of all cards in the image (query cards)
         pre_proc = Cards.preprocces_image(subimage)
@@ -115,6 +115,10 @@ while cam_quit == 0:
             card.suit_diff = Cards.match_card(card, train_ranks, train_suits)
 
             # Draw center point and match result on the image.
+            # Vi bliver nødt til at shifte vores koordinater. De koordinater der kommer ud af vores cropped billeder
+            # Kan vi ikke bruge på vores rigtige frame, derfor udregner vi hvad deres position burde være på det nye
+            # billede.
+
             frame = Cards.draw_results(frame, card)
 
 
