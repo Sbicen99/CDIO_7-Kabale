@@ -9,12 +9,12 @@
 import os
 import time
 from numpy import loadtxt
-import camera_callibration
 # Import necessary packages
 import cv2
 from imutils.video import videostream
 import numpy as np
 import Cards
+import extractimages
 
 ## Camera settings
 
@@ -69,7 +69,7 @@ while cam_quit == 0:
 
     # Grab frame from video stream
     ret, frame = cap.read()
-    frame = cv2.flip(frame, -1)
+    #frame = cv2.flip(frame, -1)
     # Her bruges kamera perspektivet, den her linje og ned til frame = dst[y:y + h, x:x + w] skal udkommenteres
     # Hvis du ikke bruger din egen kamera kallibration.
     h, w = frame.shape[:2]
@@ -87,24 +87,31 @@ while cam_quit == 0:
     # Start timer (for calculating frame rate)
     t1 = cv2.getTickCount()
     # Pre-process camera image (gray, blur, and threshold it)
-    pre_proc = Cards.preprocces_image(frame)
-    # Find and sort the contours of all cards in the image (query cards)
-    cnts_sort, cnt_is_card, crns = Cards.find_cards(pre_proc)
 
-    if len(crns) != 0:
-        w, h, top1, top2, bot1, bot2 = Cards.CalculateCardPosition(crns)
-        crns = [bot1, bot2, top1, top2]
-        cv2.circle(frame, (int(top1[0]), int(top1[1])), 6, (0, 255, 255), -1)
-        cv2.circle(frame, (int(top2[0]), int(top2[1])), 6, (0, 255, 255), -1)
-        cv2.circle(frame, (int(bot1[0]), int(bot1[1])), 6, (0, 0, 255), -1)
-        cv2.circle(frame, (int(bot2[0]), int(bot2[1])), 6, (0, 0, 255), -1)
-        card = Cards.preprocess_card(frame, crns, w, h)
+    subimages = extractimages.getimages(frame)
 
-        card.best_rank_match, card.best_suit_match, card.rank_diff, \
-        card.suit_diff = Cards.match_card(card, train_ranks, train_suits)
+    cards = []
 
-        # Draw center point and match result on the image.
-        frame = Cards.draw_results(frame, card)
+    for subimage in subimages:
+        # Find and sort the contours of all cards in the image (query cards)
+        pre_proc = Cards.preprocces_image(subimage)
+        cnts_sort, cnt_is_card, crns = Cards.find_cards(pre_proc)
+
+        if len(crns) != 0:
+            w, h, top1, top2, bot1, bot2 = Cards.CalculateCardPosition(crns)
+            crns = [bot1, bot2, top1, top2]
+            cv2.circle(frame, (int(top1[0]), int(top1[1])), 6, (0, 255, 255), -1)
+            cv2.circle(frame, (int(top2[0]), int(top2[1])), 6, (0, 255, 255), -1)
+            cv2.circle(frame, (int(bot1[0]), int(bot1[1])), 6, (0, 0, 255), -1)
+            cv2.circle(frame, (int(bot2[0]), int(bot2[1])), 6, (0, 0, 255), -1)
+            card = Cards.preprocess_card(subimage, crns, w, h)
+            cards.append(card)
+            card.best_rank_match, card.best_suit_match, card.rank_diff, \
+            card.suit_diff = Cards.match_card(card, train_ranks, train_suits)
+
+            # Draw center point and match result on the image.
+            frame = Cards.draw_results(frame, card)
+
 
     # Draw framerate in the corner of the image. Framerate is calculated at the end of the main loop,
     # so the first time this runs, framerate will be shown as 0.

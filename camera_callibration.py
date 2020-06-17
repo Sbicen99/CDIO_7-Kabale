@@ -14,7 +14,7 @@ def matrixcalc ():
     objpoints = [] # 3d point in real world space
     imgpoints = [] # 2d points in image plane.
 
-    images = glob.glob('training_imgs/chessboards/*.JPG')
+    images = glob.glob('training_imgs/chessboard/*.JPG')
     for fname in images:
         img = cv2.imread(fname)
         gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
@@ -31,8 +31,8 @@ def matrixcalc ():
 
             # Draw and display the corners
             img = cv2.drawChessboardCorners(img, (6, 9), corners2,ret)
-            # cv2.imshow('img',img)
-            # cv2.waitKey(500)
+            cv2.imshow('img',img)
+            cv2.waitKey(500)
 
     ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1],None,None)
 

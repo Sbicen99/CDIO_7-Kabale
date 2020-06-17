@@ -11,6 +11,7 @@ import cv2
 import numpy as np
 import math
 import os
+from PIL import Image
 
 ### Constants ###
 
@@ -34,7 +35,7 @@ SUIT_HEIGHT = 100
 RANK_DIFF_MAX = 2000
 SUIT_DIFF_MAX = 700
 
-CARD_MAX_AREA = 1200000
+CARD_MAX_AREA = 2000000
 CARD_MIN_AREA = 25000
 
 font = cv2.FONT_HERSHEY_SIMPLEX
@@ -186,22 +187,22 @@ def find_cards(thresh_image):
     # following criteria: 1) Smaller area than the maximum card size,
     # 2), bigger area than the minimum card size, 3) have no parents,
     # and 4) have four corners
-    crns = 0
+    crns = []
     box = []
     for i in range(len(cnts_sort)):
         size = cv2.contourArea(cnts_sort[i])
         peri = cv2.arcLength(cnts_sort[i], True)
-        approx = cv2.approxPolyDP(cnts_sort[i], 0.01 * peri, True)
+        #approx = cv2.approxPolyDP(cnts_sort[i], 0.01 * peri, True)
+        rect = cv2.minAreaRect(cnts_sort[i])
+        box = cv2.boxPoints(rect)
 
         if ((size < CARD_MAX_AREA) and (size > CARD_MIN_AREA)
-                and (hier_sort[i][3] == -1) and (len(approx) == 4)):
+                and (hier_sort[i][3] == -1) and (len(box) == 4)):
             cnt_is_card[i] = 1
             # print(approx)
-            crns = approx
-            rect = cv2.minAreaRect(cnts_sort[i])
-            box = cv2.boxPoints(rect)
+            crns = box
 
-    return cnts_sort, cnt_is_card, box
+    return cnts_sort, cnt_is_card, crns
 
 
 def preprocess_card(image, pts, w, h):
@@ -235,24 +236,17 @@ def preprocess_card(image, pts, w, h):
 
     cv2.imshow("200x300 card", qCard.warp)
 
-    hsv = cv2.cvtColor(qCard.warp, cv2.COLOR_BGR2HSV)
 
-    lower_red = np.array([30, 150, 50])
-    upper_red = np.array([255, 255, 180])
-
-    mask = cv2.inRange(hsv, lower_red, upper_red)
-    res = cv2.bitwise_and(qCard.warp, qCard.warp, mask=mask)
-
-
-    # Grab corner of warped card image and do a 4x zoom
-    Qcorner = qCard.warp[300-CORNER_HEIGHT:295, 5:CORNER_WIDTH+5]
+    # Tager fat i nederste venstre hjørner og zoomer x4
+    Qcorner = qCard.warp[300-CORNER_HEIGHT:295, 5:CORNER_WIDTH+2]
     Qcorner_zoom = cv2.resize(Qcorner, (0, 0), fx=4, fy=4)
 
-    # Sample known white pixel intensity to determine good threshold level
 
+    # Flipper det så det vender ordenligt
     Qcorner_zoom = cv2.flip(Qcorner_zoom, -1)
     cv2.imshow('Qcorner', Qcorner_zoom)
 
+    # Laver det om så vi kan bruge cv2.threshold.
     gray_Qcorner = cv2.cvtColor(Qcorner_zoom, cv2.COLOR_BGR2GRAY)
 
     # Retval bruges ikke - OTSU giver den rigtige thresh baseret på hvilke farver der eksisterer.
@@ -267,8 +261,8 @@ def preprocess_card(image, pts, w, h):
     Qrank = im_bw[20:190, 0:135]
     Qsuit = im_bw[150:336, 0:135]
 
-    cv2.imshow('Qrank thresh', Qrank)
-    cv2.imshow('Qsuit thresh', Qsuit)
+    # cv2.imshow('Qrank thresh', Qrank)
+    # cv2.imshow('Qsuit thresh', Qsuit)
 
     # Find rank contour and bounding rectangle, isolate and find largest contour
     Qrank_cnts, hier = cv2.findContours(Qrank, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -384,9 +378,8 @@ def flattener(image, pts):
     Returns the flattened, re-sized, grayed image.
     See www.pyimagesearch.com/2014/08/25/4-point-opencv-getperspective-transform-example/"""
     temp_rect = np.zeros((4, 2), dtype="float32")
-
-    # h er altid lig med h = 1.5w
-    # Vi starter med at udregne hvor vores 4 kort er i forhold til vores kort.
+    s = np.sum(pts, axis=1)
+    # Vi starter med at udregne hvor vores 4 hjørner er i forhold til vores kort.
 
     topcornerlist = np.array([[1000000, 10000000], [100000000, 100000000]])
 
@@ -413,7 +406,18 @@ def flattener(image, pts):
     # Hvis kortet hælder mod højre
     # top1 = venstre hjørne, top2 = højre
     # bot1 = højre hjørne bot2 = venstre hjørne
-    if topcornerlist[0][0] <= topcornerlist[1][0]:
+    if int(topcornerlist[0][1]) == int(topcornerlist[1][1]):
+        print('90 grader vinkel')
+        temp_rect[0] = pts[np.argmin(s)]
+        temp_rect[2] = pts[np.argmax(s)]
+        # now, compute the difference between the points, the
+        # top-right point will have the smallest difference,
+        # whereas the bottom-left will have the largest difference
+        diff = np.diff(pts, axis=1)
+        temp_rect[1] = pts[np.argmin(diff)]
+        temp_rect[3] = pts[np.argmax(diff)]
+
+    elif topcornerlist[0][0] < topcornerlist[1][0]:
         temp_rect[0] = topcornerlist[0]
         temp_rect[1] = topcornerlist[1]
         temp_rect[2] = bottomcornerlist[0]
@@ -447,15 +451,15 @@ def CalculateCardPosition(crns):
     cornerlist = np.array([[0, 0], [0, 0]])
     # Finder de to højeste y værdier i vores array. De højeste yværdier er de nederste punkter.
     for corn in crns:
-        if corn[1] > cornerlist[0][1]:
+        if corn[1] >= cornerlist[0][1]:
             cornerlist[1] = cornerlist[0]
             cornerlist[0] = corn
 
-        elif corn[1] > cornerlist[1][1]:
+        elif corn[1] >= cornerlist[1][1]:
             cornerlist[1] = corn
 
     vector = None
-    if cornerlist[1][0] < cornerlist[0][0]:
+    if cornerlist[1][0] <= cornerlist[0][0]:
         vector = cornerlist[1] - cornerlist[0]
     else:
         vector = cornerlist[0] - cornerlist[1]
