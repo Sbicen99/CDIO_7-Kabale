@@ -106,10 +106,10 @@ while cam_quit == 0:
         if len(crns) != 0:
             w, h, top1, top2, bot1, bot2 = Cards.CalculateCardPosition(crns)
             crns = [bot1, bot2, top1, top2]
-            cv2.circle(frame, (int(top1[0]), int(top1[1])), 6, (0, 255, 255), -1)
-            cv2.circle(frame, (int(top2[0]), int(top2[1])), 6, (0, 255, 255), -1)
-            cv2.circle(frame, (int(bot1[0]), int(bot1[1])), 6, (0, 0, 255), -1)
-            cv2.circle(frame, (int(bot2[0]), int(bot2[1])), 6, (0, 0, 255), -1)
+            #cv2.circle(frame, (int(top1[0]), int(top1[1])), 6, (0, 255, 255), -1)
+            #cv2.circle(frame, (int(top2[0]), int(top2[1])), 6, (0, 255, 255), -1)
+            #cv2.circle(frame, (int(bot1[0]), int(bot1[1])), 6, (0, 0, 255), -1)
+            #cv2.circle(frame, (int(bot2[0]), int(bot2[1])), 6, (0, 0, 255), -1)
             card = Cards.preprocess_card(subimage, crns, w, h)
             cards.append(card)
             card.best_rank_match, card.best_suit_match, card.rank_diff, \
@@ -119,14 +119,14 @@ while cam_quit == 0:
             # Vi bliver nødt til at shifte vores koordinater. De koordinater der kommer ud af vores cropped billeder
             # Kan vi ikke bruge på vores rigtige frame, derfor udregner vi hvad deres position burde være på det nye
             # billede.
-            if (k != (len(subimages) - 1)):
+            if k != len(subimages) - 1:
                 card.center[0] = card.center[0] + k*int(height/7)
                 card.center[1] = card.center[1] + int(width/4)
             else:
                 card.center[0] = card.center[0] + 1*int(height/7)
 
             frame = Cards.draw_results(frame, card)
-            k = k + 1
+        k = k + 1
 
     # Draw framerate in the corner of the image. Framerate is calculated at the end of the main loop,
     # so the first time this runs, framerate will be shown as 0.
