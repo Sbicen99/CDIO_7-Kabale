@@ -11,8 +11,8 @@ import time
 
 # Import necessary packages
 import cv2
-from imutils.video import videostream
 import numpy as np
+
 import Cards
 import extractimages
 
@@ -74,7 +74,7 @@ while cam_quit == 0:
     ###### image = cv2.imread(path + '/training_imgs/temp-test.jpg')
 
     ret, frame = cap.read()
-    #frame = cv2.flip(frame, -1)
+    # frame = cv2.flip(frame, -1)
     # Her bruges kamera perspektivet, den her linje og ned til frame = dst[y:y + h, x:x + w] skal udkommenteres
     # Hvis du ikke bruger din egen kamera kallibration.
     h, w = frame.shape[:2]
@@ -106,10 +106,10 @@ while cam_quit == 0:
         if len(crns) != 0:
             w, h, top1, top2, bot1, bot2 = Cards.CalculateCardPosition(crns)
             crns = [bot1, bot2, top1, top2]
-            #cv2.circle(frame, (int(top1[0]), int(top1[1])), 6, (0, 255, 255), -1)
-            #cv2.circle(frame, (int(top2[0]), int(top2[1])), 6, (0, 255, 255), -1)
-            #cv2.circle(frame, (int(bot1[0]), int(bot1[1])), 6, (0, 0, 255), -1)
-            #cv2.circle(frame, (int(bot2[0]), int(bot2[1])), 6, (0, 0, 255), -1)
+            # cv2.circle(frame, (int(top1[0]), int(top1[1])), 6, (0, 255, 255), -1)
+            # cv2.circle(frame, (int(top2[0]), int(top2[1])), 6, (0, 255, 255), -1)
+            # cv2.circle(frame, (int(bot1[0]), int(bot1[1])), 6, (0, 0, 255), -1)
+            # cv2.circle(frame, (int(bot2[0]), int(bot2[1])), 6, (0, 0, 255), -1)
             card = Cards.preprocess_card(subimage, crns, w, h)
             cards.append(card)
             card.best_rank_match, card.best_suit_match, card.rank_diff, \
@@ -120,10 +120,10 @@ while cam_quit == 0:
             # Kan vi ikke bruge på vores rigtige frame, derfor udregner vi hvad deres position burde være på det nye
             # billede.
             if k != len(subimages) - 1:
-                card.center[0] = card.center[0] + k*int(height/7)
-                card.center[1] = card.center[1] + int(width/4)
+                card.center[0] = card.center[0] + k * int(height / 7)
+                card.center[1] = card.center[1] + int(width / 4)
             else:
-                card.center[0] = card.center[0] + 1*int(height/7)
+                card.center[0] = card.center[0] + 1 * int(height / 7)
 
             frame = Cards.draw_results(frame, card)
         k = k + 1
@@ -131,93 +131,21 @@ while cam_quit == 0:
     # Draw framerate in the corner of the image. Framerate is calculated at the end of the main loop,
     # so the first time this runs, framerate will be shown as 0.
 
-
     cv2.putText(frame, "FPS: " + str(int(frame_rate_calc)), (10, 26), font, 0.7, (255, 0, 255), 2, cv2.LINE_AA)
     cv2.putText(frame, "KORTBUNKE ", (10, 50), font, 0.7, (255, 0, 255), 2, cv2.LINE_AA)
-    cv2.putText(frame, "GRUNDBUNKER ", (2*int(height/7)+20, 26), font, 0.7, (255, 0, 255), 2, cv2.LINE_AA)
-    cv2.putText(frame, "BYGGESTABLER ", (10, int(width/4)+30), font, 0.7, (255, 0, 255), 2, cv2.LINE_AA)
+    cv2.putText(frame, "GRUNDBUNKER ", (2 * int(height / 7) + 20, 26), font, 0.7, (255, 0, 255), 2, cv2.LINE_AA)
+    cv2.putText(frame, "BYGGESTABLER ", (10, int(width / 4) + 35), font, 0.7, (255, 0, 255), 2, cv2.LINE_AA)
 
     # Draw the lines into the frame for splitting the card piles. This may make it easier to identify cards.
-    cv2.line(frame, (0, int(width/4)), (frame.size, int(width/4)), BLUE_COLOR, 5)
-    cv2.line(frame, (2*int(height/7), 0), (2*int(height/7), int(height/7)), RED_COLOR, 5)
-    cv2.line(frame, (int(height/7), 0), (int(height/7), int(height/7)), RED_COLOR, 5)
+    cv2.line(frame, (0, int(width / 4)), (frame.size, int(width / 4)), BLUE_COLOR, 5)
+    cv2.line(frame, (2 * int(height / 7), 0), (2 * int(height / 7), int(height / 7)), RED_COLOR, 5)
+    cv2.line(frame, (int(height / 7), 0), (int(height / 7), int(height / 7)), RED_COLOR, 5)
 
     for i in range(7):
         if i == 0:
             pass
         else:
-            cv2.line(frame, (i * int(height/7), int(width/4)), (int(width/4), frame.size), RED_COLOR, 5)
-
-    # Resize the frame.
-    scale_percent = 100  # percent of original size
-    width = int(frame.shape[1] * scale_percent / 100)
-    height = int(frame.shape[0] * scale_percent / 100)
-    dim = (width, height)
-    frame = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
-
-    # Finally, display the image with the identified cards!
-    cv2.imshow("Card Detector", frame)
-
-    # cv2.imshow("Preprossed image", Cards.preprocces_image(image))
-
-    # Calculate framerate
-    t2 = cv2.getTickCount()
-    time1 = (t2 - t1) / freq
-    frame_rate_calc = 1 / time1
-
-    # Poll the keyboard. If 'q' is pressed, exit the main loop.
-    key = cv2.waitKey(1) & 0xFF
-
-    if key == ord("q"):
-        cam_quit = 1
-
-
-
-
-    """" if len(cnts_sort) != 0:
-
-        # Initialize a new "cards" list to assign the card objects.
-        # k indexes the newly made array of cards.
-        cards = []
-        k = 0
-
-        # For each contour detected:
-        for i in range(len(cnts_sort)):
-            # print(cnt_is_card[i])
-            if (cnt_is_card[i] == 1):
-                # Create a card object from the contour and append it to the list of cards.
-                # preprocess_card function takes the card contour and contour and
-                # determines the cards properties (corner points, etc). It generates a
-                # flattened 200x300 image of the card, and isolates the card's
-                # suit and rank from the image.
-                cards.append(Cards.preprocess_card(cnts_sort[i], frame))
-
-                # Find the best rank and suit match for the card.
-                cards[k].best_rank_match, cards[k].best_suit_match, cards[k].rank_diff, cards[
-                    k].suit_diff = Cards.match_card(cards[k], train_ranks, train_suits)
-
-                # Draw center point and match result on the image.
-                frame = Cards.draw_results(frame, cards[k])
-                k = k + 1
-
-        # Draw card contours on image (have to do contours all at once or
-        # they do not show up properly for some reason)
-        if (len(cards) != 0):
-            temp_cnts = []
-            for i in range(len(cards)):
-                temp_cnts.append(cards[i].contour)
-            cv2.drawContours(frame, temp_cnts, -1, (255, 0, 0), 2)
-
-    # Draw framerate in the corner of the image. Framerate is calculated at the end of the main loop,
-    # so the first time this runs, framerate will be shown as 0.
-    cv2.putText(frame, "FPS: " + str(int(frame_rate_calc)), (10, 26), font, 0.7, (255, 0, 255), 2, cv2.LINE_AA)
-    cv2.putText(frame, "KORTBUNKE ", (10, 50), font, 0.7, (255, 0, 255), 2, cv2.LINE_AA)
-    cv2.putText(frame, "GRUNDBUNKER ", (720, 26), font, 0.7, (255, 0, 255), 2, cv2.LINE_AA)
-    cv2.putText(frame, "BYGGESTABLER ", (10, 500), font, 0.7, (255, 0, 255), 2, cv2.LINE_AA)
-
-    # Draw the lines into the frame for splitting the card piles. This may make it easier to identify cards.
-    cv2.line(frame, (0, 450), (frame.size, 450), BLUE_COLOR, 5)
-    cv2.line(frame, (700, 0), (700, 450), RED_COLOR, 5)
+            cv2.line(frame, (i * int(height / 7), int(width / 4)), (int(width / 4), frame.size), RED_COLOR, 5)
 
     # Resize the frame.
     scale_percent = 60  # percent of original size
@@ -238,10 +166,25 @@ while cam_quit == 0:
 
     # Poll the keyboard. If 'q' is pressed, exit the main loop.
     key = cv2.waitKey(1) & 0xFF
+
     if key == ord("q"):
         cam_quit = 1
 
-# Close all windows and close the IP Camera video stream.
-cap.release()
-cv2.destroyAllWindows()"""
+    i = 1
+    if key == ord("p"):
+        savedCards = []
+        for detectedCards in cards:
+            if i <= 7:
+                rankCard = Cards.rank_converter(detectedCards.best_rank_match.upper())
+                suitCard = detectedCards.best_suit_match
+
+                print(f"Byggestabel: {i} " + rankCard + suitCard[0].lower())
+                theCard = rankCard.upper() + suitCard[0].lower()
+                savedCards.append(theCard)
+
+                with open('kabalen.txt', 'w') as f:
+                    for myCard in savedCards:
+                        f.write("%s\n" % myCard)
+                i += 1
+
 
