@@ -1,4 +1,4 @@
-############## Python-OpenCV Playing Card Detector ###############
+# Python-OpenCV Playing Card Detector ###############
 #
 # Author: Evan Juras
 # Date: 9/5/17
@@ -56,10 +56,10 @@ cam_quit = 0  # Loop control variable
 mtx = np.load('Callibration_files/mtx_gustav.npy')
 dist = np.load('Callibration_files/dist_gustav.npy')
 
-input_from_user = input("If you want to use computer webcam press 1, "
+input_from_user = input("If you want to use computer webcam press 0, "
                         "for IP Cam Server press ENTER ")
-if input_from_user == '1':
-    cap = cv2.VideoCapture(1)
+if input_from_user == '0':
+    cap = cv2.VideoCapture(0)
     time.sleep(1)
 else:
     pasted_URL = input("Paste the IP Camera Server URL ")
