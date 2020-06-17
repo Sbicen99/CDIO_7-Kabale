@@ -170,6 +170,9 @@ while cam_quit == 0:
     if key == ord("q"):
         cam_quit = 1
 
+
+
+    # This saves the cards names in a file and also cutting it down to its initials.
     i = 1
     if key == ord("p"):
         savedCards = []
