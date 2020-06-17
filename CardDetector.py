@@ -44,8 +44,8 @@ time.sleep(1)  # Give the camera time to warm up
 
 # Load the train rank and suit images
 path = os.path.dirname(os.path.abspath(__file__))
-train_ranks = Cards.load_ranks(path + '/Card_Imgs/Ranks/')
-train_suits = Cards.load_suits(path + '/Card_Imgs/Suits/')
+train_ranks = Cards.load_ranks(path + '/Card_Imgs/ranks/')
+train_suits = Cards.load_suits(path + '/Card_Imgs/suits/')
 
 ### ---- MAIN LOOP ---- ###
 # The main loop repeatedly grabs frames from the video stream
@@ -97,6 +97,7 @@ while cam_quit == 0:
 
     cards = []
     k = 0
+    width, height, channel = frame.shape
     for subimage in subimages:
         # Find and sort the contours of all cards in the image (query cards)
         pre_proc = Cards.preprocces_image(subimage)
@@ -118,24 +119,34 @@ while cam_quit == 0:
             # Vi bliver nødt til at shifte vores koordinater. De koordinater der kommer ud af vores cropped billeder
             # Kan vi ikke bruge på vores rigtige frame, derfor udregner vi hvad deres position burde være på det nye
             # billede.
+            if (k != (len(subimages) - 1)):
+                card.center[0] = card.center[0] + k*int(height/7)
+                card.center[1] = card.center[1] + int(width/4)
+            else:
+                card.center[0] = card.center[0] + 1*int(height/7)
 
             frame = Cards.draw_results(frame, card)
-
+            k = k + 1
 
     # Draw framerate in the corner of the image. Framerate is calculated at the end of the main loop,
     # so the first time this runs, framerate will be shown as 0.
+
+
     cv2.putText(frame, "FPS: " + str(int(frame_rate_calc)), (10, 26), font, 0.7, (255, 0, 255), 2, cv2.LINE_AA)
     cv2.putText(frame, "KORTBUNKE ", (10, 50), font, 0.7, (255, 0, 255), 2, cv2.LINE_AA)
-    cv2.putText(frame, "GRUNDBUNKER ", (720, 26), font, 0.7, (255, 0, 255), 2, cv2.LINE_AA)
-    cv2.putText(frame, "BYGGESTABLER ", (10, 500), font, 0.7, (255, 0, 255), 2, cv2.LINE_AA)
+    cv2.putText(frame, "GRUNDBUNKER ", (2*int(height/7)+20, 26), font, 0.7, (255, 0, 255), 2, cv2.LINE_AA)
+    cv2.putText(frame, "BYGGESTABLER ", (10, int(width/4)+30), font, 0.7, (255, 0, 255), 2, cv2.LINE_AA)
 
     # Draw the lines into the frame for splitting the card piles. This may make it easier to identify cards.
-    cv2.line(frame, (0, 450), (frame.size, 450), BLUE_COLOR, 5)
-    cv2.line(frame, (700, 0), (700, 450), RED_COLOR, 5)
-    cv2.line(frame, (350, 0), (350, 450), RED_COLOR, 5)
-    for i in range(8):
-        ++i
-        cv2.line(frame, (i * 275, 450), (250, frame.size), RED_COLOR, 5)
+    cv2.line(frame, (0, int(width/4)), (frame.size, int(width/4)), BLUE_COLOR, 5)
+    cv2.line(frame, (2*int(height/7), 0), (2*int(height/7), int(height/7)), RED_COLOR, 5)
+    cv2.line(frame, (int(height/7), 0), (int(height/7), int(height/7)), RED_COLOR, 5)
+
+    for i in range(7):
+        if i == 0:
+            pass
+        else:
+            cv2.line(frame, (i * int(height/7), int(width/4)), (int(width/4), frame.size), RED_COLOR, 5)
 
     # Resize the frame.
     scale_percent = 100  # percent of original size
