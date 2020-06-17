@@ -1,4 +1,4 @@
-############## Playing Card Detector Functions ###############
+# Playing Card Detector Functions ###############
 #
 # Author: Evan Juras
 # Date: 9/5/17
@@ -10,12 +10,11 @@ import cv2
 # Import necessary packages
 import numpy as np
 import os
-import re
 import math
 import os
 from PIL import Image
 
-### Constants ###
+# Constants #
 
 # Adaptive threshold levels
 
@@ -58,7 +57,7 @@ def preprocces_image(image):
     return dilate
 
 
-### Structures to hold query card and train card information ###
+# Structures to hold query card and train card information #
 
 class Query_card:
     """Structure to store information about query cards in the camera image."""
@@ -93,7 +92,7 @@ class Train_suits:
         self.name = "Placeholder"
 
 
-### Functions ###
+# Functions ###
 def load_ranks(filepath):
     """Loads rank images from directory specified by filepath. Stores
     them in a list of Train_ranks objects."""
@@ -134,7 +133,6 @@ def preprocess_imageOLD(image):
     """Returns a grayed, blurred, and adaptively thresholded camera image."""
 
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    # gray = image
     blur = cv2.GaussianBlur(gray, (9, 9), 0)
 
     # The best threshold level depends on the ambient lighting conditions.
@@ -218,7 +216,6 @@ def preprocess_card(image, pts, w, h):
     qCard.corner_pts = pts
 
     # Find width and height of card's bounding rectangle
-    # x, y, w, h = cv2.boundingRect(pts)
     qCard.width, qCard.height = w, h
 
     # Find center point of card by taking x and y average of the four corners.
@@ -252,10 +249,6 @@ def preprocess_card(image, pts, w, h):
     # Retval bruges ikke - OTSU giver den rigtige thresh baseret på hvilke farver der eksisterer.
     (thresh, im_bw) = cv2.threshold(gray_Qcorner, 128, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)
 
-    #cv2.imshow('query thresh', im_bw)
-
-    #    query_thresh_rank = cv2.cvtColor(thresh, cv2.COLOR_BGR2GRAY)
-    #    query_thresh_suit = cv2.cvtColor(thresh, cv2.COLOR_BGR2GRAY)
 
     # Split in to top and bottom half (top shows rank, bottom shows suit)
     Qrank = im_bw[20:190, 0:135]
@@ -335,10 +328,10 @@ def match_card(qCard, train_ranks, train_suits):
     # Combine best rank match and best suit match to get query card's identity.
     # If the best matches have too high of a difference value, card identity
     # is still Unknown
-    if (best_rank_match_diff < RANK_DIFF_MAX):
+    if best_rank_match_diff < RANK_DIFF_MAX:
         best_rank_match_name = best_rank_name
 
-    if (best_suit_match_diff < SUIT_DIFF_MAX):
+    if best_suit_match_diff < SUIT_DIFF_MAX:
         best_suit_match_name = best_suit_name
 
     best_suit_match_list = best_suit_match_name.split('_')
@@ -360,6 +353,7 @@ def draw_results(image, qCard):
 
     rank_name = qCard.best_rank_match
     suit_name = qCard.best_suit_match
+
 
     # Draw card name twice, so letters have black outline
     cv2.putText(image, (rank_name + ' of'), (x - 60, y - 10), font, 1, (0, 0, 0), 3, cv2.LINE_AA)
