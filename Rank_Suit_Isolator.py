@@ -27,9 +27,9 @@ cap = cv2.VideoCapture(0)
 # Use counter variable to switch from isolating Rank to isolating Suit
 i = 1
 
-for Name in ['Ace', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight',
-             'Nine', 'Ten', 'Jack', 'Queen', 'King', 'Spades', 'Diamonds',
-             'Clubs', 'Hearts']:
+for Name in ['Ace_SB', 'Two_SB', 'Three_SB', 'Four_SB', 'Five_SB', 'Six_SB', 'Seven_SB', 'Eight_SB',
+             'Nine_SB', 'Ten_SB', 'Jack_SB', 'Queen_SB', 'King_SB', 'Spades_SB', 'Diamonds_SB',
+             'Clubs_SB', 'Hearts_SB']:
 
     filename = Name + '.jpg'
 
@@ -38,7 +38,7 @@ for Name in ['Ace', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight',
     # Press 'p' to take a picture
     while True:
         path = os.path.dirname(os.path.abspath(__file__))
-        frame = cv2.imread(path + '/training_imgs/hjerter_4.jpg')
+        frame = cv2.imread(path + '/training_imgs/5_image.jpg')
         cv2.imshow("Card", frame)
         key = cv2.waitKey(1) & 0xFF
         if key == ord("p"):

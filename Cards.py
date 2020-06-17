@@ -1,4 +1,4 @@
-############## Playing Card Detector Functions ###############
+# Playing Card Detector Functions #
 #
 # Author: Evan Juras
 # Date: 9/5/17
@@ -6,10 +6,11 @@
 # various steps of the card detection algorithm
 
 
+import cv2
 # Import necessary packages
 import numpy as np
-import cv2
-import time
+import os
+import re
 
 ### Constants ###
 
@@ -54,7 +55,7 @@ def preprocces_image(image):
     return dilate
 
 
-### Structures to hold query card and train card information ###
+# Structures to hold query card and train card information #
 
 class Query_card:
     """Structure to store information about query cards in the camera image."""
@@ -97,26 +98,13 @@ def load_ranks(filepath):
     train_ranks = []
     i = 0
 
-
-    for Rank in ['Ace', 'Ace_g', 'Ace_ga', 'Ace_gb',
-                 'Two', 'Two_g',
-                 'Three', 'Three_g',
-                 'Four', 'Four_g',
-                 'Five', 'Five_g',
-                 'Six', 'Six_g',
-                 'Seven', 'Seven_g',
-                 'Eight', 'Eight_g',
-                 'Nine', 'Nine_g',
-                 'Ten', 'Ten_g',
-                 'Jack', 'Jack_g',
-                 'Queen', 'Queen_g',
-                 'King', 'King_g']:
-
-        train_ranks.append(Train_ranks())
-        train_ranks[i].name = Rank
-        filename = Rank + '.jpg'
-        train_ranks[i].img = cv2.imread(filepath + filename, cv2.IMREAD_GRAYSCALE)
-        i = i + 1
+    for Rank in os.listdir(filepath):
+        if Rank.endswith(".jpg"):
+            train_ranks.append(Train_ranks())
+            train_ranks[i].name = os.path.splitext(Rank)[0]
+            filename = Rank
+            train_ranks[i].img = cv2.imread(filepath + filename, cv2.IMREAD_GRAYSCALE)
+            i = i + 1
 
     return train_ranks
 
@@ -128,15 +116,13 @@ def load_suits(filepath):
     train_suits = []
     i = 0
 
-    for Suit in ['Spades', 'Spades_ga', 'Spades_gb',
-                 'Diamonds', 'Diamonds_g',
-                 'Clubs', 'Clubs_g', 'Clubs_ga',
-                 'Hearts', 'Hearts_g']:
-        train_suits.append(Train_suits())
-        train_suits[i].name = Suit
-        filename = Suit + '.jpg'
-        train_suits[i].img = cv2.imread(filepath + filename, cv2.IMREAD_GRAYSCALE)
-        i = i + 1
+    for Suit in os.listdir(filepath):
+        if Suit.endswith(".jpg"):
+            train_suits.append(Train_suits())
+            train_suits[i].name = os.path.splitext(Suit)[0]
+            filename = Suit
+            train_suits[i].img = cv2.imread(filepath + filename, cv2.IMREAD_GRAYSCALE)
+            i = i + 1
 
     return train_suits
 
@@ -223,11 +209,6 @@ def preprocess_card(contour, image):
     pts = np.float32(approx)
     qCard.corner_pts = pts
 
-    #for pts in qCard.corner_pts:
-     #   print(pts)
-
-
-    cv2.imshow('image', image)
     # Find width and height of card's bounding rectangle
     x, y, w, h = cv2.boundingRect(contour)
     qCard.width, qCard.height = w, h
@@ -241,9 +222,6 @@ def preprocess_card(contour, image):
     # Warp card into 200x300 flattened image using perspective transform
     qCard.warp = flattener(image, pts, w, h)
 
-
-
-
     # cv2.imshow("200x300 card", qCard.warp)
 
     # Grab corner of warped card image and do a 4x zoom
@@ -254,11 +232,9 @@ def preprocess_card(contour, image):
     white_level = Qcorner_zoom[15, int((CORNER_WIDTH * 4) / 2)]
     thresh_level = white_level - CARD_THRESH
 
-
-    #if (thresh_level <= 0): # Det her er den originale linje men den giver en fejl.
+    # if (thresh_level <= 0): # Det her er den originale linje men den giver en fejl.
     if (thresh_level.any):
         thresh_level = 1
-
 
     cv2.imshow('Qcorner', Qcorner_zoom)
 
@@ -270,16 +246,15 @@ def preprocess_card(contour, image):
 
     cv2.imshow('query thresh', im_bw)
 
-#    query_thresh_rank = cv2.cvtColor(thresh, cv2.COLOR_BGR2GRAY)
-#    query_thresh_suit = cv2.cvtColor(thresh, cv2.COLOR_BGR2GRAY)
+    #    query_thresh_rank = cv2.cvtColor(thresh, cv2.COLOR_BGR2GRAY)
+    #    query_thresh_suit = cv2.cvtColor(thresh, cv2.COLOR_BGR2GRAY)
 
     # Split in to top and bottom half (top shows rank, bottom shows suit)
     Qrank = im_bw[20:190, 0:135]
     Qsuit = im_bw[150:336, 0:135]
 
-    #cv2.imshow('Qrank thresh', Qrank)
-    #cv2.imshow('Qsuit thresh', Qsuit)
-
+    # cv2.imshow('Qrank thresh', Qrank)
+    # cv2.imshow('Qsuit thresh', Qsuit)
 
     # Find rank contour and bounding rectangle, isolate and find largest contour
     Qrank_cnts, hier = cv2.findContours(Qrank, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -293,8 +268,6 @@ def preprocess_card(contour, image):
         Qrank_sized = cv2.resize(Qrank_roi, (RANK_WIDTH, RANK_HEIGHT), 0, 0)
         qCard.rank_img = Qrank_sized
         cv2.imshow('qCard.rank_img', qCard.rank_img)
-
-
 
     # Find suit contour and bounding rectangle, isolate and find largest contour
     Qsuit_cnts, hier = cv2.findContours(Qsuit, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -354,11 +327,17 @@ def match_card(qCard, train_ranks, train_suits):
     # Combine best rank match and best suit match to get query card's identity.
     # If the best matches have too high of a difference value, card identity
     # is still Unknown
-    if (best_rank_match_diff < RANK_DIFF_MAX):
+    if best_rank_match_diff < RANK_DIFF_MAX:
         best_rank_match_name = best_rank_name
 
-    if (best_suit_match_diff < SUIT_DIFF_MAX):
+    if best_suit_match_diff < SUIT_DIFF_MAX:
         best_suit_match_name = best_suit_name
+
+    best_suit_match_list = best_suit_match_name.split('_')
+    best_suit_match_name = best_suit_match_list[0]
+
+    best_rank_match_list = best_rank_match_name.split('_')
+    best_rank_match_name = best_rank_match_list[0]
 
     # Return the identiy of the card and the quality of the suit and rank match
     return best_rank_match_name, best_suit_match_name, best_rank_match_diff, best_suit_match_diff
