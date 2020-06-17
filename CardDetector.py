@@ -128,6 +128,10 @@ while cam_quit == 0:
     # Draw the lines into the frame for splitting the card piles. This may make it easier to identify cards.
     cv2.line(frame, (0, 450), (frame.size, 450), BLUE_COLOR, 5)
     cv2.line(frame, (700, 0), (700, 450), RED_COLOR, 5)
+    cv2.line(frame, (350, 0), (350, 450), RED_COLOR, 5)
+    for i in range(8):
+        ++i
+        cv2.line(frame, (i * 275, 450), (250, frame.size), RED_COLOR, 5)
 
     # Resize the frame.
     scale_percent = 100  # percent of original size
