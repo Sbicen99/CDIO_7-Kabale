@@ -57,7 +57,7 @@ dist = np.load('Callibration_files/dist_gustav.npy')
 input_from_user = input("If you want to use computer webcam press 1, "
                         "for IP Cam Server press ENTER ")
 if input_from_user == '1':
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(0)
     time.sleep(1)
 else:
     pasted_URL = input("Paste the IP Camera Server URL ")
@@ -128,6 +128,8 @@ while cam_quit == 0:
             frame = Cards.draw_results(frame, card)
 
         else:
+            # Vi tilføjer lige et tomt kort hvis vores subbillede ikke indeholder et kort, det bruges når information
+            # Sendes til java processen senere.
             card = None
             cards.append(card)
         k = k + 1

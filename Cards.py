@@ -24,7 +24,7 @@ CARD_THRESH = 30
 # Width and height of card corner, where rank and suit are
 CORNER_WIDTH = 32
 CORNER_HEIGHT = 84
-
+WIDTH_TO_HEIGHT_RATIO = 1.45
 # Dimensions of rank train images
 RANK_WIDTH = 70
 RANK_HEIGHT = 125
@@ -128,30 +128,6 @@ def load_suits(filepath):
 
     return train_suits
 
-
-def preprocess_imageOLD(image):
-    """Returns a grayed, blurred, and adaptively thresholded camera image."""
-
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    blur = cv2.GaussianBlur(gray, (9, 9), 0)
-
-    # The best threshold level depends on the ambient lighting conditions.
-    # For bright lighting, a high threshold must be used to isolate the cards
-    # from the background. For dim lighting, a low threshold must be used.
-    # To make the card detector independent of lighting conditions, the
-    # following adaptive threshold method is used.
-    #
-    # A background pixel in the center top of the image is sampled to determine
-    # its intensity. The adaptive threshold is set at 50 (THRESH_ADDER) higher
-    # than that. This allows the threshold to adapt to the lighting conditions.
-    img_w, img_h = np.shape(image)[:2]
-    bkg_level = gray[int(img_h / 100)][int(img_w / 2)]
-    thresh_level = bkg_level + BKG_THRESH
-
-    retval, thresh = cv2.threshold(blur, thresh_level, 255, cv2.THRESH_BINARY)
-    return thresh
-
-
 def find_cards(thresh_image):
     """Finds all card-sized contours in a thresholded camera image.
     Returns the number of cards, and a list of card contours sorted
@@ -207,15 +183,9 @@ def preprocess_card(image, pts, w, h):
     # Initialize new Query_card object
     qCard = Query_card()
 
-    # qCard.contour = contour
-
-    # Find perimeter of card and use it to approximate corner points
-    # peri = cv2.arcLength(contour, True)
-    # approx = cv2.approxPolyDP(contour, 0.01 * peri, True)
-    # pts = np.float32(approx)
     qCard.corner_pts = pts
 
-    # Find width and height of card's bounding rectangle
+    # Assign the width and height of the bounding rectangle.
     qCard.width, qCard.height = w, h
 
     # Find center point of card by taking x and y average of the four corners.
@@ -226,18 +196,12 @@ def preprocess_card(image, pts, w, h):
 
     # Warp card into 200x300 flattened image using perspective transform
     qCard.warp = flattener(image, pts)
-
-
     cv2.imshow("200x300 card", qCard.warp)
 
 
-    # Tager fat i nederste venstre hjørner og zoomer x4
-    Qcorner = qCard.warp[300-CORNER_HEIGHT:295, 5:CORNER_WIDTH+2]
+    # Tager fat i nederste højre hjørner og zoomer x4
+    Qcorner = qCard.warp[300-CORNER_HEIGHT:295, 200-CORNER_WIDTH:190]
     Qcorner_zoom = cv2.resize(Qcorner, (0, 0), fx=4, fy=4)
-
-    # Sample known white pixel intensity to determine good threshold level
-    white_level = Qcorner_zoom[15, int((CORNER_WIDTH * 4) / 2)]
-    thresh_level = white_level - CARD_THRESH
 
     # Flipper det så det vender ordenligt
     Qcorner_zoom = cv2.flip(Qcorner_zoom, -1)
@@ -295,7 +259,6 @@ def match_card(qCard, train_ranks, train_suits):
     best_suit_match_diff = 10000
     best_rank_match_name = "Unknown"
     best_suit_match_name = "Unknown"
-    i = 0
 
     # If no contours were found in query card in preprocess_card function,
     # the img size is zero, so skip the differencing process
@@ -334,6 +297,7 @@ def match_card(qCard, train_ranks, train_suits):
     if best_suit_match_diff < SUIT_DIFF_MAX:
         best_suit_match_name = best_suit_name
 
+    # Shorten the name since we match on pics with weird names.
     best_suit_match_list = best_suit_match_name.split('_')
     best_suit_match_name = best_suit_match_list[0]
 
@@ -379,9 +343,9 @@ def flattener(image, pts):
     temp_rect = np.zeros((4, 2), dtype="float32")
     s = np.sum(pts, axis=1)
     # Vi starter med at udregne hvor vores 4 hjørner er i forhold til vores kort.
-
+    # Bare 4 store tal
     topcornerlist = np.array([[1000000, 10000000], [100000000, 100000000]])
-
+    # Loop over for at finde de to øverste punkter
     for corn in pts:
         if corn[1] < topcornerlist[0][1]:
             topcornerlist[1] = topcornerlist[0]
@@ -391,7 +355,7 @@ def flattener(image, pts):
             topcornerlist[1] = corn
 
     bottomcornerlist = np.array([[0, 0], [0, 0]])
-
+    # Loop til at finde de to nederste
     for corn in pts:
         if corn[1] > bottomcornerlist[0][1]:
             bottomcornerlist[1] = bottomcornerlist[0]
@@ -402,9 +366,7 @@ def flattener(image, pts):
 
     # Please være søde ikke at rette i det her - Gustav
 
-    # Hvis kortet hælder mod højre
-    # top1 = venstre hjørne, top2 = højre
-    # bot1 = højre hjørne bot2 = venstre hjørne
+    # Denne udregning er hvis kortet står i en 90* vinkel, og hælder derfor hverken mod venstre eller højre
     if int(topcornerlist[0][1]) == int(topcornerlist[1][1]):
         temp_rect[0] = pts[np.argmin(s)]
         temp_rect[2] = pts[np.argmax(s)]
@@ -414,6 +376,10 @@ def flattener(image, pts):
         diff = np.diff(pts, axis=1)
         temp_rect[1] = pts[np.argmin(diff)]
         temp_rect[3] = pts[np.argmax(diff)]
+
+    # Hvis kortet hælder mod højre
+    # top1 er venstre hjørne, top2 er højre hjørne
+    # bot1 er højre hjørne bot2 er venstre hjørne
 
     elif topcornerlist[0][0] < topcornerlist[1][0]:
         temp_rect[0] = topcornerlist[0]
@@ -426,13 +392,8 @@ def flattener(image, pts):
         temp_rect[1] = topcornerlist[0]
         temp_rect[2] = bottomcornerlist[1]
         temp_rect[3] = bottomcornerlist[0]
-        # if (bottomcornerlist[0][1] < bottomcornerlist[1][1]):
-        #    temp_rect[0] = br
-       #     temp_rect[3] = bl
-       # else:
-        #    temp_rect[0] = br
-        #    temp_rect[3] = bl
 
+    # de her tal definerer det 200x300 warp vi trækker ud.
     maxWidth = 200
     maxHeight = 300
 
@@ -447,7 +408,7 @@ def flattener(image, pts):
 
 def CalculateCardPosition(crns):
     cornerlist = np.array([[0, 0], [0, 0]])
-    # Finder de to højeste y værdier i vores array. De højeste yværdier er de nederste punkter.
+    # Finder de to højeste y værdier i vores array. De højeste y-værdier er de nederste punkter.
     for corn in crns:
         if corn[1] >= cornerlist[0][1]:
             cornerlist[1] = cornerlist[0]
@@ -463,11 +424,10 @@ def CalculateCardPosition(crns):
         vector = cornerlist[0] - cornerlist[1]
 
     # Den ortogonale vektor bruges til at udrenge approximationen for de to top punkter.
-    orthogonal_vector = [-1.45*vector[1], 1.45*vector[0]]
-    # width
+    orthogonal_vector = [-1 * WIDTH_TO_HEIGHT_RATIO * vector[1], WIDTH_TO_HEIGHT_RATIO * vector[0]]
     w = math.sqrt(math.pow(vector[0], 2) + math.pow(vector[1], 2))
-    # height
-    h = w*1.45
+
+    h = w * WIDTH_TO_HEIGHT_RATIO
 
     topcorner1 = cornerlist[0] + orthogonal_vector
     topcorner2 = cornerlist[1] + orthogonal_vector
