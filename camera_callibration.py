@@ -32,7 +32,7 @@ def matrixcalc ():
             # Draw and display the corners
             img = cv2.drawChessboardCorners(img, (6, 9), corners2,ret)
             cv2.imshow('img',img)
-            cv2.waitKey(500)
+            cv2.waitKey(1000)
 
     ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1],None,None)
 

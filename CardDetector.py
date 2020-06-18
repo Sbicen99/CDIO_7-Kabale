@@ -56,10 +56,10 @@ cam_quit = 0  # Loop control variable
 mtx = np.load('Callibration_files/mtx_gustav.npy')
 dist = np.load('Callibration_files/dist_gustav.npy')
 
-input_from_user = input("If you want to use computer webcam press 0, "
+input_from_user = input("If you want to use computer webcam press 1, "
                         "for IP Cam Server press ENTER ")
-if input_from_user == '0':
-    cap = cv2.VideoCapture(0)
+if input_from_user == '1':
+    cap = cv2.VideoCapture(1)
     time.sleep(1)
 else:
     pasted_URL = input("Paste the IP Camera Server URL ")
@@ -126,6 +126,10 @@ while cam_quit == 0:
                 card.center[0] = card.center[0] + 1 * int(height / 7)
 
             frame = Cards.draw_results(frame, card)
+
+        else:
+            card = None
+            cards.append(card)
         k = k + 1
 
     # Draw framerate in the corner of the image. Framerate is calculated at the end of the main loop,
@@ -177,17 +181,25 @@ while cam_quit == 0:
     if key == ord("p"):
         savedCards = []
         for detectedCards in cards:
-            if i <= 7:
-                rankCard = Cards.rank_converter(detectedCards.best_rank_match.upper())
-                suitCard = detectedCards.best_suit_match
+            if i <= 8:
+                if detectedCards is None:
+                    savedCards.append(detectedCards)
+                else:
+                    rankCard = Cards.rank_converter(detectedCards.best_rank_match.upper())
+                    suitCard = detectedCards.best_suit_match
 
-                print(f"Byggestabel: {i} " + rankCard + suitCard[0].lower())
-                theCard = rankCard.upper() + suitCard[0].lower()
-                savedCards.append(theCard)
+                    print(f"Byggestabel: {i} " + rankCard + suitCard[0].lower())
+                    theCard = rankCard.upper() + suitCard[0].lower()
+                    savedCards.append(theCard)
 
                 with open('kabalen.txt', 'w') as f:
                     for myCard in savedCards:
-                        f.write("%s\n" % myCard)
+                        if myCard is None:
+                            f.write(" \n")
+                        else:
+                            f.write("%s\n" % myCard)
                 i += 1
+
+
 
 
