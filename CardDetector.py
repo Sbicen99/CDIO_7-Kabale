@@ -1,4 +1,4 @@
-# Python-OpenCV Playing Card Detector ###############
+############## Python-OpenCV Playing Card Detector ###############
 #
 # Author: Evan Juras
 # Date: 9/5/17
@@ -12,17 +12,17 @@ import time
 # Import necessary packages
 import cv2
 import numpy as np
-
+import time
+import os
 import Cards
 import extractimages
+from PIL import Image
 
-## Camera settings
 
 ### ---- INITIALIZATION ---- ###
 # Define constants and initialize variables
 
 ## Camera settings
-
 IM_WIDTH = 1280
 IM_HEIGHT = 720
 FRAME_RATE = 2
@@ -39,8 +39,6 @@ font = cv2.FONT_HERSHEY_SIMPLEX
 # See VideoStream.py for VideoStream class definition
 ## IF USING USB CAMERA INSTEAD OF PICAMERA,
 ## CHANGE THE THIRD ARGUMENT FROM 1 TO 2 IN THE FOLLOWING LINE:
-# videostream = VideoStream.VideoStream((IM_WIDTH, IM_HEIGHT), FRAME_RATE, 2, 0).start()
-time.sleep(1)  # Give the camera time to warm up
 
 # Load the train rank and suit images
 path = os.path.dirname(os.path.abspath(__file__))
@@ -68,7 +66,7 @@ else:
 
 # Begin capturing frames
 while cam_quit == 0:
-    ##### resize.resize(path + '/training_imgs/IMG_0817.jpg')
+
     # Grab frame from video stream
     ###### image = videostream.read()
     ###### image = cv2.imread(path + '/training_imgs/temp-test.jpg')
@@ -91,7 +89,9 @@ while cam_quit == 0:
 
     # Start timer (for calculating frame rate)
     t1 = cv2.getTickCount()
+
     # Pre-process camera image (gray, blur, and threshold it)
+    pre_proc = Cards.preprocces_image(frame)
 
     subimages = extractimages.getimages(frame)
 
@@ -170,7 +170,6 @@ while cam_quit == 0:
 
     # Poll the keyboard. If 'q' is pressed, exit the main loop.
     key = cv2.waitKey(1) & 0xFF
-
     if key == ord("q"):
         cam_quit = 1
 
