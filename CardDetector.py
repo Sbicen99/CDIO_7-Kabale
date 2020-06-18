@@ -8,6 +8,7 @@
 
 import os
 import time
+import json
 
 # Import necessary packages
 import cv2
@@ -70,9 +71,9 @@ while cam_quit == 0:
     # Grab frame from video stream
     ###### image = videostream.read()
     ###### image = cv2.imread(path + '/training_imgs/temp-test.jpg')
-
     ret, frame = cap.read()
-    # frame = cv2.flip(frame, -1)
+    frame = cv2.flip(frame, -1)
+    ##frame = cv2.imread(path + '/training_imgs/test_kabale.jpg')
     # Her bruges kamera perspektivet, den her linje og ned til frame = dst[y:y + h, x:x + w] skal udkommenteres
     # Hvis du ikke bruger din egen kamera kallibration.
     h, w = frame.shape[:2]
@@ -199,6 +200,27 @@ while cam_quit == 0:
                             f.write("%s\n" % myCard)
                 i += 1
 
+    def writeCardJson(i: int):
+        if cards[i] is None:
+            return None
+        else:
+            return {
+                "suit": cards[i].best_suit_match,
+                "rank": cards[i].best_rank_match
+            }
+
+    def writeJson():
+        cardsJson = {
+            "waste": writeCardJson(0),
+            "tableau1": writeCardJson(1),
+            "tableau2": writeCardJson(2),
+            "tableau3": writeCardJson(3),
+            "tableau4": writeCardJson(4),
+            "tableau5": writeCardJson(5),
+            "tableau6": writeCardJson(6),
+            "tableau7": writeCardJson(7),
+        }
+        return cardsJson
 
 
 
