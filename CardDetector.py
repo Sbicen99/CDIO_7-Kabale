@@ -195,7 +195,7 @@ while cam_quit == 0:
                 with open('kabalen.txt', 'w') as f:
                     for myCard in savedCards:
                         if myCard is None:
-                            f.write(" \n")
+                            f.write("NA\n")
                         else:
                             f.write("%s\n" % myCard)
                 i += 1

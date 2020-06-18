@@ -489,7 +489,8 @@ def rank_converter(rank):
         "TEN": "10",
         "JACK": "J",
         "QUEEN": "Q",
-        "KING": "K"
+        "KING": "K",
+        "UNKNOWN": "U"
     }
     return switcher.get(rank, " ")
 
