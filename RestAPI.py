@@ -1,4 +1,5 @@
 import json
+import CardDetector
 
 from flask import Flask, jsonify
 
@@ -59,7 +60,7 @@ def hello1():
 @app.route('/data')
 def hello2():
     try:
-        return jsonify({"data": list_of_lists.pop()})
+        return jsonify(CardDetector.startMainLoop())
     except:
         return '... Løbet tør for data, hvor trist!'
 
