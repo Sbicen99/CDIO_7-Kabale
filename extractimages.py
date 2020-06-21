@@ -23,16 +23,6 @@ def getimages(im):
 
     # Det her kort er det nye kort der bliver vendt fra bunken.
     pilecard = im[0:int(width/4), int(height/7) * 1:int((height/7) * 2)]
-    cv2.imshow('bulding_pile1.png', building_pile1)
-
-    dict0 = {'name': 'Pilecard', 'img': pilecard}
-    dict1 = {'Name': 'pile1', 'img': building_pile1}
-    dict2 = {'Name': 'pile2', 'img': building_pile2}
-    dict3 = {'Name': 'pile3', 'img': building_pile3}
-    dict4 = {'Name': 'pile4', 'img': building_pile4}
-    dict5 = {'Name': 'pile5', 'img': building_pile5}
-    dict6 = {'Name': 'pile6', 'img': building_pile6}
-    dict7 = {'Name': 'pile7', 'img': building_pile7}
 
     # Lad være med at ændre på hvor de forskellige ting bliver returneret plox - Gustav
     imagelist = [building_pile1, building_pile2, building_pile3, building_pile4, building_pile5, building_pile6, building_pile7, pilecard, ]

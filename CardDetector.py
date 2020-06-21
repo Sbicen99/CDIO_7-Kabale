@@ -17,6 +17,7 @@ import time
 import os
 import Cards
 import extractimages
+import sched, time
 from PIL import Image
 
 
@@ -55,6 +56,8 @@ cam_quit = 0  # Loop control variable
 mtx = np.load('Callibration_files/mtx_gustav.npy')
 dist = np.load('Callibration_files/dist_gustav.npy')
 
+framecounter = 0
+
 input_from_user = input("If you want to use computer webcam press 1, "
                         "for IP Cam Server press ENTER ")
 if input_from_user == '1':
@@ -67,7 +70,7 @@ else:
 
 # Begin capturing frames
 while cam_quit == 0:
-
+    framecounter += 1
     # Grab frame from video stream
     ###### image = videostream.read()
     ###### image = cv2.imread(path + '/training_imgs/temp-test.jpg')
@@ -100,7 +103,7 @@ while cam_quit == 0:
     k = 0
     width, height, channel = frame.shape
     for subimage in subimages:
-        # Find and sort the contours of all cards in the image (query cards)
+        # Find contour for kort stakken i billedet.
         pre_proc = Cards.preprocces_image(subimage)
         cnts_sort, cnt_is_card, crns = Cards.find_cards(pre_proc)
 
@@ -120,9 +123,12 @@ while cam_quit == 0:
             # Vi bliver nødt til at shifte vores koordinater. De koordinater der kommer ud af vores cropped billeder
             # Kan vi ikke bruge på vores rigtige frame, derfor udregner vi hvad deres position burde være på det nye
             # billede.
+
+            # Det her er for vores pilecard der bliver vendt
             if k != len(subimages) - 1:
                 card.center[0] = card.center[0] + k * int(height / 7)
                 card.center[1] = card.center[1] + int(width / 4)
+            # Det her er for resten af kortene.
             else:
                 card.center[0] = card.center[0] + 1 * int(height / 7)
 
@@ -133,6 +139,7 @@ while cam_quit == 0:
             # Sendes til java processen senere.
             card = None
             cards.append(card)
+        # Counter til at holde styr på hvilket kort vi er på.
         k = k + 1
 
     # Draw framerate in the corner of the image. Framerate is calculated at the end of the main loop,
@@ -164,8 +171,6 @@ while cam_quit == 0:
     # Finally, display the image with the identified cards!
     cv2.imshow("Card Detector", frame)
 
-    # cv2.imshow("Preprossed image", Cards.preprocces_image(image))
-
     # Calculate framerate
     t2 = cv2.getTickCount()
     time1 = (t2 - t1) / freq
@@ -180,7 +185,8 @@ while cam_quit == 0:
 
     # This saves the cards names in a file and also cutting it down to its initials.
     i = 1
-    if key == ord("p"):
+    if framecounter == int(frame_rate_calc):
+        framecounter = 0
         savedCards = []
         for detectedCards in cards:
             if i <= 8:
