@@ -101,7 +101,9 @@ while cam_quit == 0:
     ###### image = videostream.read()
     ###### image = cv2.imread(path + '/training_imgs/temp-test.jpg')
     ret, frame = cap.read()
+    frame = cv2.flip(frame, 1)
     frame = cv2.flip(frame, -1)
+    frame = cv2.flip(frame, 0)
     ##frame = cv2.imread(path + '/training_imgs/test_kabale.jpg')
     # Her bruges kamera perspektivet, den her linje og ned til frame = dst[y:y + h, x:x + w] skal udkommenteres
     # Hvis du ikke bruger din egen kamera kallibration.
@@ -209,7 +211,7 @@ while cam_quit == 0:
 
     if framecounter >= int(frame_rate_calc):
         framecounter = 0
-        print('Updated json')
+        # print('Updated json')
         with open('kabalen2.json', 'w') as f:
             f.write(writeJson())
     # This saves the cards names in a file and also cutting it down to its initials.

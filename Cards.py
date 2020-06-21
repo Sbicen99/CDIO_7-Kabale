@@ -216,7 +216,7 @@ def preprocess_card(image, pts, w, h):
 
     # Split in to top and bottom half (top shows rank, bottom shows suit)
     Qrank = im_bw[20:190, 0:135]
-    Qsuit = im_bw[150:336, 0:135]
+    Qsuit = im_bw[170:336, 0:135]
 
     # cv2.imshow('Qrank thresh', Qrank)
     # cv2.imshow('Qsuit thresh', Qsuit)
