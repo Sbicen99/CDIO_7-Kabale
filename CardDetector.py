@@ -21,23 +21,33 @@ import sched, time
 from PIL import Image
 
 
-### ---- INITIALIZATION ---- ###
-# Define constants and initialize variables
+def writeCardJson(i: int):
+    if cards[i] is None:
+        return None
+    else:
+        return {
+            "suit": cards[i].best_suit_match[0],
+            "rank": Cards.rank_converter(cards[i].best_rank_match.upper())
+        }
 
-## Camera settings
-IM_WIDTH = 1280
-IM_HEIGHT = 720
-FRAME_RATE = 2
-BLUE_COLOR = (255, 0, 0)
-RED_COLOR = (0, 0, 255)
 
-## Initialize calculated frame rate because it's calculated AFTER the first time it's displayed
-frame_rate_calc = 1
-freq = cv2.getTickFrequency()
+def writeJson():
+    cardsJson = {
+        "waste": writeCardJson(0),
+        "tableau1": writeCardJson(1),
+        "tableau2": writeCardJson(2),
+        "tableau3": writeCardJson(3),
+        "tableau4": writeCardJson(4),
+        "tableau5": writeCardJson(5),
+        "tableau6": writeCardJson(6),
+        "tableau7": writeCardJson(7),
+    }
+    return json.dumps(cardsJson)
+
 ## Define font to use
 font = cv2.FONT_HERSHEY_SIMPLEX
 # Initialize camera object and video feed from the camera. The video stream is set up
-# as a seperate thread that constantly grabs frames from the camera feed. 
+# as a seperate thread that constantly grabs frames from the camera feed.
 # See VideoStream.py for VideoStream class definition
 ## IF USING USB CAMERA INSTEAD OF PICAMERA,
 ## CHANGE THE THIRD ARGUMENT FROM 1 TO 2 IN THE FOLLOWING LINE:
@@ -51,12 +61,11 @@ train_suits = Cards.load_suits(path + '/Card_Imgs/suits/')
 # The main loop repeatedly grabs frames from the video stream
 # and processes them to find and identify playing cards.
 
-cam_quit = 0  # Loop control variable
 # Henter kamera kallibrerings variable.
 mtx = np.load('Callibration_files/mtx_gustav.npy')
 dist = np.load('Callibration_files/dist_gustav.npy')
 
-framecounter = 0
+
 
 input_from_user = input("If you want to use computer webcam press 1, "
                         "for IP Cam Server press ENTER ")
@@ -69,6 +78,23 @@ else:
         f'{pasted_URL}/video')  # Ændres, hvis der skal testes. Skrives der '1' i stedet, vil webcam kunne anvendes
 
 # Begin capturing frames
+### ---- INITIALIZATION ---- ###
+# Define constants and initialize variables
+
+## Camera settings
+IM_WIDTH = 1280
+IM_HEIGHT = 720
+FRAME_RATE = 2
+BLUE_COLOR = (255, 0, 0)
+RED_COLOR = (0, 0, 255)
+
+## Initialize calculated frame rate because it's calculated AFTER the first time it's displayed
+frame_rate_calc = 1
+freq = cv2.getTickFrequency()
+framecounter = 0
+
+cam_quit = 0  # Loop control variable
+
 while cam_quit == 0:
     framecounter += 1
     # Grab frame from video stream
@@ -181,12 +207,14 @@ while cam_quit == 0:
     if key == ord("q"):
         cam_quit = 1
 
-
-
+    if framecounter >= int(frame_rate_calc):
+        framecounter = 0
+        print('Updated json')
+        with open('kabalen2.json', 'w') as f:
+            f.write(writeJson())
     # This saves the cards names in a file and also cutting it down to its initials.
     i = 1
-    if framecounter == int(frame_rate_calc):
-        framecounter = 0
+    if key == ord("p"):
         savedCards = []
         for detectedCards in cards:
             if i <= 8:
@@ -208,27 +236,11 @@ while cam_quit == 0:
                             f.write("%s\n" % myCard)
                 i += 1
 
-    def writeCardJson(i: int):
-        if cards[i] is None:
-            return None
-        else:
-            return {
-                "suit": cards[i].best_suit_match,
-                "rank": cards[i].best_rank_match
-            }
 
-    def writeJson():
-        cardsJson = {
-            "waste": writeCardJson(0),
-            "tableau1": writeCardJson(1),
-            "tableau2": writeCardJson(2),
-            "tableau3": writeCardJson(3),
-            "tableau4": writeCardJson(4),
-            "tableau5": writeCardJson(5),
-            "tableau6": writeCardJson(6),
-            "tableau7": writeCardJson(7),
-        }
-        return cardsJson
+
+    if key == ord("l"):
+        with open('kabalen2.json', 'w') as f:
+            f.write(writeJson())
 
 
 

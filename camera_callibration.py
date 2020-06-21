@@ -38,24 +38,7 @@ def matrixcalc ():
 
     np.save('Callibration_files/mtx_gustav.npy', mtx)
     np.save('Callibration_files/dist_gustav.npy', dist)
-    return mtx, dist
 
-    img = cv2.imread('training_imgs/chessboards/IMG_0833.JPG')
-    h,  w = img.shape[:2]
-    newcameramtx, roi=cv2.getOptimalNewCameraMatrix(mtx,dist,(w,h),1,(w,h))
-
-    # undistort
-    mapx,mapy = cv2.initUndistortRectifyMap(mtx,dist,None,newcameramtx,(w,h),5)
-    dst = cv2.remap(img,mapx,mapy,cv2.INTER_LINEAR)
-
-    # crop the image
-    x,y,w,h = roi
-    cv2.imwrite('calibresult.png', dst[y:y + h, x:x + w])
-
-    np.save('Callibration_files/callibration_gustav.npy', dst[y:y + h, x:x + w])  # save
-
-    cv2.destroyAllWindows()
-
-    return dst
 
 matrixcalc()
+
