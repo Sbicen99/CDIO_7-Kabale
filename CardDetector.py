@@ -57,7 +57,7 @@ dist = np.load('Callibration_files/dist_gustav.npy')
 input_from_user = input("If you want to use computer webcam press 1, "
                         "for IP Cam Server press ENTER ")
 if input_from_user == '1':
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(0)
     time.sleep(1)
 else:
     pasted_URL = input("Paste the IP Camera Server URL ")
@@ -69,7 +69,7 @@ while cam_quit == 0:
 
     # Grab frame from video stream
     ret, frame = cap.read()
-    #frame = cv2.flip(frame, -1)
+    frame = cv2.flip(frame, -1)
     # Her bruges kamera perspektivet, den her linje og ned til frame = dst[y:y + h, x:x + w] skal udkommenteres
     # Hvis du ikke bruger din egen kamera kallibration.
     h, w = frame.shape[:2]
@@ -98,7 +98,7 @@ while cam_quit == 0:
         cnts_sort, cnt_is_card, crns = Cards.find_cards(pre_proc)
 
         if len(crns) != 0:
-            w, h, top1, top2, bot1, bot2 = Cards.CalculateCardPosition(crns)
+            w, h, top1, top2, bot1, bot2 = Cards.CalculateCardPosition(crns, frame)
             crns = [bot1, bot2, top1, top2]
             cv2.circle(frame, (int(top1[0]), int(top1[1])), 6, (0, 255, 255), -1)
             cv2.circle(frame, (int(top2[0]), int(top2[1])), 6, (0, 255, 255), -1)
