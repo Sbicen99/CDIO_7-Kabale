@@ -10,6 +10,7 @@ import cv2
 # Import necessary packages
 import numpy as np
 import math
+import os
 
 ### Constants ###
 
@@ -97,24 +98,13 @@ def load_ranks(filepath):
     train_ranks = []
     i = 0
 
-    for Rank in ['Ace', 'Ace_g', 'Ace_ga', 'Ace_gb',
-                 'Two', 'Two_g',
-                 'Three', 'Three_g',
-                 'Four', 'Four_g',
-                 'Five', 'Five_g',
-                 'Six', 'Six_g',
-                 'Seven', 'Seven_g',
-                 'Eight', 'Eight_g',
-                 'Nine', 'Nine_g',
-                 'Ten', 'Ten_g',
-                 'Jack', 'Jack_g',
-                 'Queen', 'Queen_g',
-                 'King', 'King_g']:
-        train_ranks.append(Train_ranks())
-        train_ranks[i].name = Rank
-        filename = Rank + '.jpg'
-        train_ranks[i].img = cv2.imread(filepath + filename, cv2.IMREAD_GRAYSCALE)
-        i = i + 1
+    for Rank in os.listdir(filepath):
+        if Rank.endswith(".jpg"):
+            train_ranks.append(Train_ranks())
+            train_ranks[i].name = os.path.splitext(Rank)[0]
+            filename = Rank
+            train_ranks[i].img = cv2.imread(filepath + filename, cv2.IMREAD_GRAYSCALE)
+            i = i + 1
 
     return train_ranks
 
@@ -126,15 +116,13 @@ def load_suits(filepath):
     train_suits = []
     i = 0
 
-    for Suit in ['Spades', 'Spades_ga', 'Spades_gb',
-                 'Diamonds', 'Diamonds_g',
-                 'Clubs', 'Clubs_g', 'Clubs_ga',
-                 'Hearts', 'Hearts_g']:
-        train_suits.append(Train_suits())
-        train_suits[i].name = Suit
-        filename = Suit + '.jpg'
-        train_suits[i].img = cv2.imread(filepath + filename, cv2.IMREAD_GRAYSCALE)
-        i = i + 1
+    for Suit in os.listdir(filepath):
+        if Suit.endswith(".jpg"):
+            train_suits.append(Train_suits())
+            train_suits[i].name = os.path.splitext(Suit)[0]
+            filename = Suit
+            train_suits[i].img = cv2.imread(filepath + filename, cv2.IMREAD_GRAYSCALE)
+            i = i + 1
 
     return train_suits
 
@@ -176,7 +164,7 @@ def find_cards(thresh_image):
 
     # If there are no contours, do nothing
     if len(cnts) == 0:
-        return [], []
+        return [], [], []
 
     # Otherwise, initialize empty sorted contour and hierarchy lists
     cnts_sort = []
@@ -198,8 +186,8 @@ def find_cards(thresh_image):
     # following criteria: 1) Smaller area than the maximum card size,
     # 2), bigger area than the minimum card size, 3) have no parents,
     # and 4) have four corners
-    crns = None
-    box = None
+    crns = 0
+    box = []
     for i in range(len(cnts_sort)):
         size = cv2.contourArea(cnts_sort[i])
         peri = cv2.arcLength(cnts_sort[i], True)
@@ -212,7 +200,6 @@ def find_cards(thresh_image):
             crns = approx
             rect = cv2.minAreaRect(cnts_sort[i])
             box = cv2.boxPoints(rect)
-            #print(box)
 
     return cnts_sort, cnt_is_card, box
 
@@ -243,7 +230,6 @@ def preprocess_card(image, pts, w, h):
     qCard.center = [cent_x, cent_y]
 
     # Warp card into 200x300 flattened image using perspective transform
-    # cv2.imshow('before flattener', image)
     qCard.warp = flattener(image, pts)
 
 
@@ -284,8 +270,8 @@ def preprocess_card(image, pts, w, h):
     Qrank = im_bw[20:190, 0:135]
     Qsuit = im_bw[150:336, 0:135]
 
-    #cv2.imshow('Qrank thresh', Qrank)
-    # cv2.imshow('Qsuit thresh', Qsuit)
+    cv2.imshow('Qrank thresh', Qrank)
+    cv2.imshow('Qsuit thresh', Qsuit)
 
     # Find rank contour and bounding rectangle, isolate and find largest contour
     Qrank_cnts, hier = cv2.findContours(Qrank, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
