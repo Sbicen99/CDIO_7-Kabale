@@ -20,6 +20,7 @@ import extractimages
 import sched, time
 from PIL import Image
 
+## Camera settings
 
 def writeCardJson(i: int):
     if cards[i] is None:
@@ -30,6 +31,7 @@ def writeCardJson(i: int):
             "rank": Cards.rank_converter(cards[i].best_rank_match.upper())
         }
 
+## Camera settings
 
 def writeJson():
     cardsJson = {
@@ -61,6 +63,7 @@ train_suits = Cards.load_suits(path + '/Card_Imgs/suits/')
 # The main loop repeatedly grabs frames from the video stream
 # and processes them to find and identify playing cards.
 
+cam_quit = 0  # Loop control variable
 # Henter kamera kallibrerings variable.
 mtx = np.load('Callibration_files/mtx_gustav.npy')
 dist = np.load('Callibration_files/dist_gustav.npy')
@@ -136,7 +139,7 @@ while cam_quit == 0:
         cnts_sort, cnt_is_card, crns = Cards.find_cards(pre_proc)
 
         if len(crns) != 0:
-            w, h, top1, top2, bot1, bot2 = Cards.CalculateCardPosition(crns)
+            w, h, top1, top2, bot1, bot2 = Cards.CalculateCardPosition(crns, frame)
             crns = [bot1, bot2, top1, top2]
             # cv2.circle(frame, (int(top1[0]), int(top1[1])), 6, (0, 255, 255), -1)
             # cv2.circle(frame, (int(top2[0]), int(top2[1])), 6, (0, 255, 255), -1)

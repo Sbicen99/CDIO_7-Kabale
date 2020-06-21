@@ -1,4 +1,4 @@
-# Playing Card Detector Functions ###############
+############## Playing Card Detector Functions ###############
 #
 # Author: Evan Juras
 # Date: 9/5/17
@@ -198,7 +198,6 @@ def preprocess_card(image, pts, w, h):
     qCard.warp = flattener(image, pts)
     cv2.imshow("200x300 card", qCard.warp)
 
-
     # Tager fat i nederste højre hjørner og zoomer x4
     Qcorner = qCard.warp[300-CORNER_HEIGHT:295, 200-CORNER_WIDTH:190]
     Qcorner_zoom = cv2.resize(Qcorner, (0, 0), fx=4, fy=4)
@@ -259,6 +258,7 @@ def match_card(qCard, train_ranks, train_suits):
     best_suit_match_diff = 10000
     best_rank_match_name = "Unknown"
     best_suit_match_name = "Unknown"
+    i = 0
 
     # If no contours were found in query card in preprocess_card function,
     # the img size is zero, so skip the differencing process
@@ -317,7 +317,6 @@ def draw_results(image, qCard):
 
     rank_name = qCard.best_rank_match
     suit_name = qCard.best_suit_match
-
 
     # Draw card name twice, so letters have black outline
     cv2.putText(image, (rank_name + ' of'), (x - 60, y - 10), font, 1, (0, 0, 0), 3, cv2.LINE_AA)
@@ -406,7 +405,8 @@ def flattener(image, pts):
 
     return warp
 
-def CalculateCardPosition(crns):
+def CalculateCardPosition(crns, image):
+    runs = False
     cornerlist = np.array([[0, 0], [0, 0]])
     # Finder de to højeste y værdier i vores array. De højeste y-værdier er de nederste punkter.
     for corn in crns:
@@ -417,22 +417,147 @@ def CalculateCardPosition(crns):
         elif corn[1] >= cornerlist[1][1]:
             cornerlist[1] = corn
 
-    vector = None
-    if cornerlist[1][0] <= cornerlist[0][0]:
-        vector = cornerlist[1] - cornerlist[0]
-    else:
-        vector = cornerlist[0] - cornerlist[1]
+    while True:
+        vector = None
+        if cornerlist[1][0] <= cornerlist[0][0]:
+            vector = cornerlist[1] - cornerlist[0]
+        else:
+            vector = cornerlist[0] - cornerlist[1]
 
-    # Den ortogonale vektor bruges til at udrenge approximationen for de to top punkter.
-    orthogonal_vector = [-1 * WIDTH_TO_HEIGHT_RATIO * vector[1], WIDTH_TO_HEIGHT_RATIO * vector[0]]
-    w = math.sqrt(math.pow(vector[0], 2) + math.pow(vector[1], 2))
+        # Den ortogonale vektor bruges til at udrenge approximationen for de to top punkter.
+        orthogonal_vector = [-1*WIDTH_TO_HEIGHT_RATIO*vector[1], WIDTH_TO_HEIGHT_RATIO*vector[0]]
+        # width
+        w = math.sqrt(math.pow(vector[0], 2) + math.pow(vector[1], 2))
+        # height
+        h = w * WIDTH_TO_HEIGHT_RATIO
 
-    h = w * WIDTH_TO_HEIGHT_RATIO
+        topcorner1 = cornerlist[0] + orthogonal_vector
+        topcorner2 = cornerlist[1] + orthogonal_vector
 
-    topcorner1 = cornerlist[0] + orthogonal_vector
-    topcorner2 = cornerlist[1] + orthogonal_vector
+        intersections = houghLinesCorners(image, cornerlist[0],cornerlist[1],topcorner1,topcorner2)
+        if intersections == None or runs == True:
+            if runs is True:
+                cv2.putText(image, ("Locked!"), (500, 50), font, 1, (0, 255, 0), 3, cv2.LINE_AA)
+            else:
+                cv2.putText(image, ("Locking..."), (500, 50), font, 1, (0, 255, 255), 3, cv2.LINE_AA)
 
-    return w, h, topcorner1, topcorner2, cornerlist[0], cornerlist[1]
+            return w, h, topcorner1, topcorner2, cornerlist[0], cornerlist[1]
+        cornerlist[0] = intersections[0]
+        cornerlist[1] = intersections[1]
+        topcorner1 = intersections[2]
+        topcorner2 = intersections[3]
+        runs = True
+
+def houghLinesCorners(image,b1,b2,t1,t2):
+    """---------------------Hough Lines---------------------------"""
+
+    xmin = None
+    xmax = None
+    ymin = None
+    ymax = None
+    for p in [b1,b2,t1,t2]:
+        if xmin is None:
+            xmin = p[0]
+        if xmax is None:
+            xmax = p[0]
+        if ymin is None:
+            ymin = p[1]
+        if ymax is None:
+            ymax = p[1]
+
+        if p[0] < xmin:
+            xmin = p[0]
+        elif p[0] > xmax:
+            xmax = p[0]
+        if p[1] < ymin:
+            ymin = p[1]
+        elif p[1] > ymax:
+            ymax = p[1]
+
+    offsetX1 = -8
+    offsetX2 = 8
+    offsetY1 = 40
+    offsetY2 = 20
+
+    cropX1 = int(np.heaviside(0,xmin + offsetX1))
+    cropX2 = int(np.heaviside(0,xmax + offsetX2))
+    cropY1 = int(np.heaviside(0,ymin + offsetY1))
+    cropY2 = int(np.heaviside(0,ymax + offsetY2))
+
+    magfactor = 2
+
+    # cv2.imshow("what i crop", image)
+    løl = image[cropY1:cropY2, cropX1:cropX2]
+    if len(løl) == 0:
+        print("bad search")
+        return None
+    løl = cv2.resize(løl, (0, 0), fx=magfactor, fy=magfactor)
+
+    edges = cv2.Canny(løl, 128, 512, apertureSize=3)
+
+    cv2.circle(løl, (cropX1, cropY1), 6, (255, 0, 255), -1)
+    cv2.circle(løl, (cropX2, cropY2), 6, (255, 0, 255), -1)
+
+    lines = cv2.HoughLines(edges, 1, np.pi / 180, 150)
+    # lines = [[[-184, 3.0717795]]]
+    # print(lines)
+    vlines = []
+    hlines = []
+    if lines is not None:
+        #print("found lines")
+        for i in lines:
+            rho = i[0][0]
+            theta = i[0][1]
+
+            # Determine if lines are vertical based on the angle theta from origin (origo) to the normal of the line
+            if (theta >= 0 and theta < np.pi / 4) or (theta > 3 * np.pi / 4 and theta < 5 * np.pi / 4) or (
+                    theta > 7 * np.pi / 4 and theta < 8 * np.pi / 4):
+                vlines.append(i)
+
+            # Determine if lines are horizontal based on the angle theta from origin (origo) to the normal of the line
+            if (theta > np.pi / 4 and theta < 3 * np.pi / 4) or (theta > 5 * np.pi / 4 and theta < 7 * np.pi / 4):
+                hlines.append(i)
+            """
+            a = np.cos(theta)
+            b = np.sin(theta)
+            x0 = a * rho
+            y0 = b * rho
+            x1 = int(x0 + 1000 * (-b))
+            y1 = int(y0 + 1000 * (a))
+            x2 = int(x0 - 1000 * (-b))
+            y2 = int(y0 - 1000 * (a))
+
+            #cv2.line(frame, (x1, y1), (x2, y2), (188, 0, 188), 2)
+            cv2.line(edges, (x1, y1), (x2, y2), (188, 0, 188), 1)
+            """
+
+        #print("vlines")
+        #print(vlines)
+        #print("hlines")
+        #print(hlines)
+
+        while len(vlines) > 2:
+            mTheta = 0  # mean angle of the horizontal lines in radians
+            sumTheta = 0
+            j = 0
+            outlinerX = 0  # index of the line whose angle deviates the most from the mean
+            outlinerV = 0  # Variance of the line whose angle deviates the most
+            for hl in vlines:
+                sumTheta += hl[0][1]
+            mTheta = sumTheta / len(vlines)
+            for hl in vlines:
+                currentV = (hl[0][1] - mTheta) ** 2
+                if currentV > outlinerV:
+                    outlinerV = currentV
+                    outlinerX = j
+                j += 1
+            # print(outlinerV)
+            del vlines[outlinerX]
+        # print(len(vlines))
+
+        for i in vlines:
+            rho = i[0][0]
+            theta = i[0][1]
 
 
 def rank_converter(rank):
