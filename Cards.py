@@ -434,7 +434,7 @@ def CalculateCardPosition(crns, image):
         topcorner1 = cornerlist[0] + orthogonal_vector
         topcorner2 = cornerlist[1] + orthogonal_vector
 
-        intersections = houghLinesCorners(image, cornerlist[0],cornerlist[1],topcorner1,topcorner2)
+        intersections = houghLinesCorners(image, cornerlist[0],cornerlist[1], topcorner1,topcorner2)
         if intersections == None or runs == True:
             if runs is True:
                 cv2.putText(image, ("Locked!"), (500, 50), font, 1, (0, 255, 0), 3, cv2.LINE_AA)
@@ -488,13 +488,13 @@ def houghLinesCorners(image,b1,b2,t1,t2):
     magfactor = 2 # factor for magnifying the image that is being worked on, called løl "name subject to change"
 
     cv2.imshow("what i crop", image)
-    løl = image[cropY1:cropY2, cropX1:cropX2] # The function works on a cropped and magnified image "løl"
-    if len(løl) == 0: # if "løl" is empty, due to bad cropping or bad points fed to the function,
+    lel = image[cropY1:cropY2, cropX1:cropX2] # The function works on a cropped and magnified image "løl"
+    if len(lel) == 0: # if "løl" is empty, due to bad cropping or bad points fed to the function,
         print("bad search") # return non and print bad search
         return None
-    løl = cv2.resize(løl, (0, 0), fx=magfactor, fy=magfactor) # magnify løl by the magfactor for better line/ edge detection
+    lel = cv2.resize(lel, (0, 0), fx=magfactor, fy=magfactor) # magnify løl by the magfactor for better line/ edge detection
 
-    edges = cv2.Canny(løl, 128, 480, apertureSize=3) # find edges
+    edges = cv2.Canny(lel, 128, 300, apertureSize=3) # find edges
 
     ##cv2.circle(image, (cropX1, cropY1), 6, (255, 0, 255), -1)
     ##cv2.circle(image, (cropX2, cropY2), 6, (255, 0, 255), -1)
@@ -659,8 +659,8 @@ def houghLinesCorners(image,b1,b2,t1,t2):
 
             cv2.circle(edges, (int(intersections[0][0]), int(intersections[0][1])), 6, (0, 255, 255), -1)
             cv2.circle(edges, (int(intersections[1][0]), int(intersections[1][1])), 6, (0, 255, 255), -1)
-            cv2.circle(løl, (int(restimate[0]), int(restimate[1])), 6, (0, 255, 255), -1)
-            cv2.circle(løl, (int(lestimate[0]), int(lestimate[1])), 6, (0, 255, 255), -1)
+            cv2.circle(lel, (int(restimate[0]), int(restimate[1])), 6, (0, 255, 255), -1)
+            cv2.circle(lel, (int(lestimate[0]), int(lestimate[1])), 6, (0, 255, 255), -1)
 
             #cv2.circle(løl, (int(intersections[0][0]), int(intersections[0][1])), 6, (0, 255, 255), -1)
             #cv2.circle(løl, (int(intersections[1][0]), int(intersections[1][1])), 6, (0, 255, 255), -1)
@@ -676,12 +676,12 @@ def houghLinesCorners(image,b1,b2,t1,t2):
             #cv2.circle(image, (int(intersections[1][0]), int(intersections[1][1])), 6, (0, 255, 255), -1)
 
             print("Have found lines")
-            cv2.imshow("Løl", løl)
+            cv2.imshow("Lel", lel)
             cv2.imshow("Lines", edges)
             return intersections
 
     print("have not found lines")
-    cv2.imshow("Løl", løl)
+    cv2.imshow("Lel", lel)
     cv2.imshow("Lines", edges)
     return None
 

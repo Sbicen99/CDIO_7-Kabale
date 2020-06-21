@@ -138,16 +138,8 @@ while cam_quit == 0:
         cnts_sort, cnt_is_card, crns = Cards.find_cards(pre_proc)
 
         if len(crns) != 0:
-            if k != len(subimages) - 1:
-                for corner in crns:
-                    corner[0] = corner[0] + k * int(height / 7)
-                    corner[1] = corner[1] + int(width / 4)
-            # Det her er for resten af kortene.
-            else:
-                for corner in crns:
-                    corner = corner[0] + 1 * int(height / 7)
 
-            w, h, top1, top2, bot1, bot2 = Cards.CalculateCardPosition(crns, frame)
+            w, h, top1, top2, bot1, bot2 = Cards.CalculateCardPosition(crns, subimage)
             crns = [bot1, bot2, top1, top2]
             # cv2.circle(frame, (int(top1[0]), int(top1[1])), 6, (0, 255, 255), -1)
             # cv2.circle(frame, (int(top2[0]), int(top2[1])), 6, (0, 255, 255), -1)
@@ -164,6 +156,16 @@ while cam_quit == 0:
             # billede.
 
             # Det her er for vores pilecard der bliver vendt
+
+            # Det her er for vores pilecard der bliver vendt
+            # Det her er for vores pilecard der bliver vendt
+            if k != len(subimages) - 1:
+                if k != len(subimages) - 1:
+                    card.center[0] = card.center[0] + k * int(height / 7)
+                    card.center[1] = card.center[1] + int(width / 4)
+                # Det her er for resten af kortene.
+                else:
+                    card.center[0] = card.center[0] + 1 * int(height / 7)
 
             frame = Cards.draw_results(frame, card)
         else:
