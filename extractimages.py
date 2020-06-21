@@ -14,6 +14,7 @@ def getimages(im):
     # Width er cirka 1000px på mit kamera
     # Height er cirka 1900px - Gustav
     # Navngivet fra venstre mod højre
+
     building_pile1= im[int(width/4):int(width), 0:int((height/7) * 1)]
     building_pile2 = im[int(width / 4):int(width), int(height / 7) * 1:int((height / 7) * 2)]
     building_pile3 = im[int(width / 4):int(width), int(height / 7) * 2:int((height / 7) * 3)]
@@ -25,6 +26,18 @@ def getimages(im):
     # Det her kort er det nye kort der bliver vendt fra bunken.
     pilecard = im[0:int(width/4), int(height/7) * 1:int((height/7) * 2)]
 
+    subimagelist = []
+
+    subimagelist.append(building_pile1)
+    subimagelist.append(building_pile2)
+    subimagelist.append(building_pile3)
+    subimagelist.append(building_pile4)
+    subimagelist.append(building_pile5)
+    subimagelist.append(building_pile6)
+    subimagelist.append(building_pile7)
+    subimagelist.append(pilecard)
+
+
     # Lad være med at ændre på hvor de forskellige ting bliver returneret plox - Gustav
-    imagelist = [building_pile1, building_pile2, building_pile3, building_pile4, building_pile5, building_pile6, building_pile7, pilecard, ]
-    return imagelist
+
+    return subimagelist

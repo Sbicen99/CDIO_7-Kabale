@@ -96,6 +96,7 @@ freq = cv2.getTickFrequency()
 framecounter = 0
 
 cam_quit = 0  # Loop control variable
+linelist = [[], [], [], [], [], [] , [], []]
 
 while cam_quit == 0:
     framecounter += 1
@@ -125,27 +126,29 @@ while cam_quit == 0:
     t1 = cv2.getTickCount()
 
     # Pre-process camera image (gray, blur, and threshold it)
-    pre_proc = Cards.preprocces_image(frame)
+    # pre_proc = Cards.preprocces_image(frame)
 
-    subimages = extractimages.getimages(frame)
+    subimagelist = extractimages.getimages(frame)
 
     cards = []
     k = 0
     width, height, channel = frame.shape
-    for subimage in subimages:
+    for i in range(len(subimagelist)):
         # Find contour for kort stakken i billedet.
-        pre_proc = Cards.preprocces_image(subimage)
+        # subimage = getattr(image, 'img')
+        cv2.imshow('hej', subimagelist[i])
+        pre_proc = Cards.preprocces_image(subimagelist[i])
         cnts_sort, cnt_is_card, crns = Cards.find_cards(pre_proc)
 
         if len(crns) != 0:
 
-            w, h, top1, top2, bot1, bot2 = Cards.CalculateCardPosition(crns, subimage)
+            w, h, top1, top2, bot1, bot2 = Cards.CalculateCardPosition(crns, subimagelist[i], linelist[i])
             crns = [bot1, bot2, top1, top2]
             # cv2.circle(frame, (int(top1[0]), int(top1[1])), 6, (0, 255, 255), -1)
             # cv2.circle(frame, (int(top2[0]), int(top2[1])), 6, (0, 255, 255), -1)
             # cv2.circle(frame, (int(bot1[0]), int(bot1[1])), 6, (0, 0, 255), -1)
             # cv2.circle(frame, (int(bot2[0]), int(bot2[1])), 6, (0, 0, 255), -1)
-            card = Cards.preprocess_card(subimage, crns, w, h)
+            card = Cards.preprocess_card(subimagelist[i], crns, w, h)
             cards.append(card)
             card.best_rank_match, card.best_suit_match, card.rank_diff, \
             card.suit_diff = Cards.match_card(card, train_ranks, train_suits)
@@ -159,13 +162,12 @@ while cam_quit == 0:
 
             # Det her er for vores pilecard der bliver vendt
             # Det her er for vores pilecard der bliver vendt
-            if k != len(subimages) - 1:
-                if k != len(subimages) - 1:
-                    card.center[0] = card.center[0] + k * int(height / 7)
-                    card.center[1] = card.center[1] + int(width / 4)
+            if k != len(subimagelist) - 1:
+                card.center[0] = card.center[0] + k * int(height / 7)
+                card.center[1] = card.center[1] + int(width / 4)
                 # Det her er for resten af kortene.
-                else:
-                    card.center[0] = card.center[0] + 1 * int(height / 7)
+            else:
+                card.center[0] = card.center[0] + 1 * int(height / 7)
 
             frame = Cards.draw_results(frame, card)
         else:

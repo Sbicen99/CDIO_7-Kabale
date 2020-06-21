@@ -48,7 +48,7 @@ def preprocces_image(image):
 
     edges = cv2.Canny(blur, 50, 150, True)
 
-    # cv2.imshow('edges', edges)
+    cv2.imshow('edges', edges)
 
     kernel = np.ones((3, 3), np.uint8)
     dilate = cv2.dilate(edges, kernel, iterations=1)
@@ -203,7 +203,7 @@ def preprocess_card(image, pts, w, h):
 
     # Flipper det så det vender ordenligt
     Qcorner_zoom = cv2.flip(Qcorner_zoom, -1)
-    cv2.imshow('Qcorner', Qcorner_zoom)
+    # cv2.imshow('Qcorner', Qcorner_zoom)
 
     # Laver det om så vi kan bruge cv2.threshold.
     gray_Qcorner = cv2.cvtColor(Qcorner_zoom, cv2.COLOR_BGR2GRAY)
@@ -230,7 +230,7 @@ def preprocess_card(image, pts, w, h):
         Qrank_roi = Qrank[y1:y1 + h1, x1:x1 + w1]
         Qrank_sized = cv2.resize(Qrank_roi, (RANK_WIDTH, RANK_HEIGHT), 0, 0)
         qCard.rank_img = Qrank_sized
-        cv2.imshow('qCard.rank_img', qCard.rank_img)
+        # cv2.imshow('qCard.rank_img', qCard.rank_img)
 
     # Find suit contour and bounding rectangle, isolate and find largest contour
     Qsuit_cnts, hier = cv2.findContours(Qsuit, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -243,7 +243,7 @@ def preprocess_card(image, pts, w, h):
         Qsuit_roi = Qsuit[y2:y2 + h2, x2:x2 + w2]
         Qsuit_sized = cv2.resize(Qsuit_roi, (SUIT_WIDTH, SUIT_HEIGHT), 0, 0)
         qCard.suit_img = Qsuit_sized
-        cv2.imshow('qCard.suit', qCard.suit_img)
+        # cv2.imshow('qCard.suit', qCard.suit_img)
 
     return qCard
 
@@ -404,7 +404,9 @@ def flattener(image, pts):
 
     return warp
 
-def CalculateCardPosition(crns, image):
+
+def CalculateCardPosition(crns, image, oldlines):
+
     runs = False
     cornerlist = np.array([[0, 0], [0, 0]])
     # Finder de to højeste y værdier i vores array. De højeste y-værdier er de nederste punkter.
@@ -434,7 +436,7 @@ def CalculateCardPosition(crns, image):
         topcorner1 = cornerlist[0] + orthogonal_vector
         topcorner2 = cornerlist[1] + orthogonal_vector
 
-        intersections = houghLinesCorners(image, cornerlist[0],cornerlist[1], topcorner1,topcorner2)
+        intersections = houghLinesCorners(image, cornerlist[0],cornerlist[1], topcorner1,topcorner2, oldlines)
         if intersections == None or runs == True:
             if runs is True:
                 cv2.putText(image, ("Locked!"), (500, 50), font, 1, (0, 255, 0), 3, cv2.LINE_AA)
@@ -448,7 +450,7 @@ def CalculateCardPosition(crns, image):
         topcorner2 = intersections[3]
         runs = True
 
-def houghLinesCorners(image,b1,b2,t1,t2):
+def houghLinesCorners(image,b1,b2,t1,t2, oldlines):
     """---------------------Hough Lines---------------------------"""
 
     # Finds Maximum and minimum x and y af the points supplied to find where to crop the image
@@ -487,23 +489,25 @@ def houghLinesCorners(image,b1,b2,t1,t2):
 
     magfactor = 2 # factor for magnifying the image that is being worked on, called løl "name subject to change"
 
-    cv2.imshow("what i crop", image)
+    # cv2.imshow("what i crop", image)
     lel = image[cropY1:cropY2, cropX1:cropX2] # The function works on a cropped and magnified image "løl"
     if len(lel) == 0: # if "løl" is empty, due to bad cropping or bad points fed to the function,
         print("bad search") # return non and print bad search
         return None
     lel = cv2.resize(lel, (0, 0), fx=magfactor, fy=magfactor) # magnify løl by the magfactor for better line/ edge detection
 
-    edges = cv2.Canny(lel, 128, 300, apertureSize=3) # find edges
+    edges = cv2.Canny(lel, 150, 265, apertureSize=3) # find edges
 
     ##cv2.circle(image, (cropX1, cropY1), 6, (255, 0, 255), -1)
     ##cv2.circle(image, (cropX2, cropY2), 6, (255, 0, 255), -1)
 
-    lines = cv2.HoughLines(edges, 1, np.pi / 180, 150) #
+    lines = cv2.HoughLines(edges, 1, np.pi / 180, 125) #
     # lines = [[[-184, 3.0717795]]]
     # print(lines)
     vlines = []
     hlines = []
+
+
     if lines is not None:
         #print("found lines")
         for i in lines:
