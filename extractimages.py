@@ -1,67 +1,30 @@
-from PIL import Image
 
-im = Image.open('training_imgs/test_kabale.jpg')
-width, height = im.size
-print(width)
-print(height)
-# The box is a 4-tuple defining the left, upper, right, and lower pixel coordinate.
-crop_rectangle = (0, 0, 1000, 1000)
-cropped_im = im.crop(crop_rectangle)
+import cv2
+import time
 
-picturelist = [cropped_im]
 
-# første crop foregår i øverste hjørne, og vi skal bruge syv rækker
-# De her crops er til de 4 bygge stabler.
-crop1 = (0 * width / 7, 0, 1 * width / 7, height / 4)
-crop2 = (1 * width / 7, 0, 2 * width / 7, height / 4)
-crop3 = (2 * width / 7, 0, 3 * width / 7, height / 4)
-crop4 = (3 * width / 7, 0, 4 * width / 7, height / 4)
+def getimages(im):
+    width, height, channel = im.shape
+    # The box is a 4-tuple defining the left, upper, right, and lower pixel coordinate.
 
-cropped_im = im.crop(crop1)
-cropped_im.show()
+    # Det her crop finder det kort der er nyt fra bunken.
 
-cropped_im = im.crop(crop2)
-cropped_im.show()
+    crop_newcard = (6 * width / 7, 0, 7 * width / 7, height / 4)
+    # Nederste y punkt : øverste y punkt, nederste x punkt, højeste x punkt.
+    # Width er cirka 1000px på mit kamera
+    # Height er cirka 1900px - Gustav
+    # Navngivet fra venstre mod højre
+    building_pile1= im[int(width/4):int(width), 0:int((height/7) * 1)]
+    building_pile2 = im[int(width / 4):int(width), int(height / 7) * 1:int((height / 7) * 2)]
+    building_pile3 = im[int(width / 4):int(width), int(height / 7) * 2:int((height / 7) * 3)]
+    building_pile4 = im[int(width / 4):int(width), int(height / 7) * 3:int((height / 7) * 4)]
+    building_pile5 = im[int(width / 4):int(width), int(height / 7) * 4:int((height / 7) * 5)]
+    building_pile6 = im[int(width / 4):int(width), int(height / 7) * 5:int((height / 7) * 6)]
+    building_pile7 = im[int(width / 4):int(width), int(height / 7) * 6:int((height / 7) * 7)]
 
-cropped_im = im.crop(crop3)
-cropped_im.show()
+    # Det her kort er det nye kort der bliver vendt fra bunken.
+    pilecard = im[0:int(width/4), int(height/7) * 1:int((height/7) * 2)]
 
-cropped_im = im.crop(crop4)
-cropped_im.show()
-
-# Det her crop finder det kort der er nyt fra bunken.
-
-crop_newcard = (6 * width / 7, 0, 7 * width / 7, height / 4)
-cropped_im = im.crop(crop_newcard)
-cropped_im.show()
-
-# Sidste crops finder de 7 stabler på bordet.
-
-crop_pile1 = (0 * width / 7, height / 4, 1 * width / 7, height)
-crop_pile2 = (1 * width / 7, height / 4, 2 * width / 7, height)
-crop_pile3 = (2 * width / 7, height / 4, 3 * width / 7, height)
-crop_pile4 = (3 * width / 7, height / 4, 4 * width / 7, height)
-crop_pile5 = (4 * width / 7, height / 4, 5 * width / 7, height)
-crop_pile6 = (5 * width / 7, height / 4, 6 * width / 7, height)
-crop_pile7 = (6 * width / 7, height / 4, 7 * width / 7, height)
-
-cropped_im = im.crop(crop_pile1)
-cropped_im.show()
-
-cropped_im = im.crop(crop_pile2)
-cropped_im.show()
-
-cropped_im = im.crop(crop_pile3)
-cropped_im.show()
-
-cropped_im = im.crop(crop_pile4)
-cropped_im.show()
-
-cropped_im = im.crop(crop_pile5)
-cropped_im.show()
-
-cropped_im = im.crop(crop_pile6)
-cropped_im.show()
-
-cropped_im = im.crop(crop_pile7)
-cropped_im.show()
+    # Lad være med at ændre på hvor de forskellige ting bliver returneret plox - Gustav
+    imagelist = [building_pile1, building_pile2, building_pile3, building_pile4, building_pile5, building_pile6, building_pile7, pilecard, ]
+    return imagelist

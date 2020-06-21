@@ -12,7 +12,8 @@ import numpy as np
 import math
 import os
 
-### Constants ###
+
+# Constants #
 
 # Adaptive threshold levels
 
@@ -22,7 +23,7 @@ CARD_THRESH = 30
 # Width and height of card corner, where rank and suit are
 CORNER_WIDTH = 32
 CORNER_HEIGHT = 84
-
+WIDTH_TO_HEIGHT_RATIO = 1.45
 # Dimensions of rank train images
 RANK_WIDTH = 70
 RANK_HEIGHT = 125
@@ -34,7 +35,7 @@ SUIT_HEIGHT = 100
 RANK_DIFF_MAX = 2000
 SUIT_DIFF_MAX = 700
 
-CARD_MAX_AREA = 1200000
+CARD_MAX_AREA = 2000000
 CARD_MIN_AREA = 25000
 
 font = cv2.FONT_HERSHEY_SIMPLEX
@@ -55,7 +56,7 @@ def preprocces_image(image):
     return dilate
 
 
-### Structures to hold query card and train card information ###
+# Structures to hold query card and train card information #
 
 class Query_card:
     """Structure to store information about query cards in the camera image."""
@@ -90,7 +91,7 @@ class Train_suits:
         self.name = "Placeholder"
 
 
-### Functions ###
+# Functions ###
 def load_ranks(filepath):
     """Loads rank images from directory specified by filepath. Stores
     them in a list of Train_ranks objects."""
@@ -126,31 +127,6 @@ def load_suits(filepath):
 
     return train_suits
 
-
-def preprocess_imageOLD(image):
-    """Returns a grayed, blurred, and adaptively thresholded camera image."""
-
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    # gray = image
-    blur = cv2.GaussianBlur(gray, (9, 9), 0)
-
-    # The best threshold level depends on the ambient lighting conditions.
-    # For bright lighting, a high threshold must be used to isolate the cards
-    # from the background. For dim lighting, a low threshold must be used.
-    # To make the card detector independent of lighting conditions, the
-    # following adaptive threshold method is used.
-    #
-    # A background pixel in the center top of the image is sampled to determine
-    # its intensity. The adaptive threshold is set at 50 (THRESH_ADDER) higher
-    # than that. This allows the threshold to adapt to the lighting conditions.
-    img_w, img_h = np.shape(image)[:2]
-    bkg_level = gray[int(img_h / 100)][int(img_w / 2)]
-    thresh_level = bkg_level + BKG_THRESH
-
-    retval, thresh = cv2.threshold(blur, thresh_level, 255, cv2.THRESH_BINARY)
-    return thresh
-
-
 def find_cards(thresh_image):
     """Finds all card-sized contours in a thresholded camera image.
     Returns the number of cards, and a list of card contours sorted
@@ -160,8 +136,6 @@ def find_cards(thresh_image):
     cnts, hier = cv2.findContours(thresh_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     index_sort = sorted(range(len(cnts)), key=lambda i: cv2.contourArea(cnts[i]), reverse=True)
 
-
-
     # If there are no contours, do nothing
     if len(cnts) == 0:
         return [], [], []
@@ -170,9 +144,6 @@ def find_cards(thresh_image):
     cnts_sort = []
     hier_sort = []
     cnt_is_card = np.zeros(len(cnts), dtype=int)
-
-
-
 
     # Fill empty lists with sorted contour and sorted hierarchy. Now,
     # the indices of the contour list still correspond with those of
@@ -186,22 +157,22 @@ def find_cards(thresh_image):
     # following criteria: 1) Smaller area than the maximum card size,
     # 2), bigger area than the minimum card size, 3) have no parents,
     # and 4) have four corners
-    crns = 0
+    crns = []
     box = []
     for i in range(len(cnts_sort)):
         size = cv2.contourArea(cnts_sort[i])
         peri = cv2.arcLength(cnts_sort[i], True)
-        approx = cv2.approxPolyDP(cnts_sort[i], 0.01 * peri, True)
+        #approx = cv2.approxPolyDP(cnts_sort[i], 0.01 * peri, True)
+        rect = cv2.minAreaRect(cnts_sort[i])
+        box = cv2.boxPoints(rect)
 
         if ((size < CARD_MAX_AREA) and (size > CARD_MIN_AREA)
-                and (hier_sort[i][3] == -1) and (len(approx) == 4)):
+                and (hier_sort[i][3] == -1) and (len(box) == 4)):
             cnt_is_card[i] = 1
-            # print(approx)
-            crns = approx
-            rect = cv2.minAreaRect(cnts_sort[i])
-            box = cv2.boxPoints(rect)
+            # print("Hello")
+            crns = box
 
-    return cnts_sort, cnt_is_card, box
+    return cnts_sort, cnt_is_card, crns
 
 
 def preprocess_card(image, pts, w, h):
@@ -211,16 +182,9 @@ def preprocess_card(image, pts, w, h):
     # Initialize new Query_card object
     qCard = Query_card()
 
-    # qCard.contour = contour
-
-    # Find perimeter of card and use it to approximate corner points
-    # peri = cv2.arcLength(contour, True)
-    # approx = cv2.approxPolyDP(contour, 0.01 * peri, True)
-    # pts = np.float32(approx)
     qCard.corner_pts = pts
 
-    # Find width and height of card's bounding rectangle
-    # x, y, w, h = cv2.boundingRect(pts)
+    # Assign the width and height of the bounding rectangle.
     qCard.width, qCard.height = w, h
 
     # Find center point of card by taking x and y average of the four corners.
@@ -231,47 +195,29 @@ def preprocess_card(image, pts, w, h):
 
     # Warp card into 200x300 flattened image using perspective transform
     qCard.warp = flattener(image, pts)
-
-
     cv2.imshow("200x300 card", qCard.warp)
 
-    hsv = cv2.cvtColor(qCard.warp, cv2.COLOR_BGR2HSV)
-
-    lower_red = np.array([30, 150, 50])
-    upper_red = np.array([255, 255, 180])
-
-    mask = cv2.inRange(hsv, lower_red, upper_red)
-    res = cv2.bitwise_and(qCard.warp, qCard.warp, mask=mask)
-
-    edges = cv2.Canny(qCard.warp, 100, 200)
-    cv2.imshow('Edges', edges)
-
-
-    # Grab corner of warped card image and do a 4x zoom
-    Qcorner = qCard.warp[300-CORNER_HEIGHT:295, 5:CORNER_WIDTH+5]
+    # Tager fat i nederste højre hjørner og zoomer x4
+    Qcorner = qCard.warp[300-CORNER_HEIGHT:295, 200-CORNER_WIDTH:190]
     Qcorner_zoom = cv2.resize(Qcorner, (0, 0), fx=4, fy=4)
 
-    # Sample known white pixel intensity to determine good threshold level
-
+    # Flipper det så det vender ordenligt
     Qcorner_zoom = cv2.flip(Qcorner_zoom, -1)
     cv2.imshow('Qcorner', Qcorner_zoom)
 
+    # Laver det om så vi kan bruge cv2.threshold.
     gray_Qcorner = cv2.cvtColor(Qcorner_zoom, cv2.COLOR_BGR2GRAY)
 
     # Retval bruges ikke - OTSU giver den rigtige thresh baseret på hvilke farver der eksisterer.
     (thresh, im_bw) = cv2.threshold(gray_Qcorner, 128, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)
 
-    #cv2.imshow('query thresh', im_bw)
-
-    #    query_thresh_rank = cv2.cvtColor(thresh, cv2.COLOR_BGR2GRAY)
-    #    query_thresh_suit = cv2.cvtColor(thresh, cv2.COLOR_BGR2GRAY)
 
     # Split in to top and bottom half (top shows rank, bottom shows suit)
     Qrank = im_bw[20:190, 0:135]
-    Qsuit = im_bw[150:336, 0:135]
+    Qsuit = im_bw[170:336, 0:135]
 
-    cv2.imshow('Qrank thresh', Qrank)
-    cv2.imshow('Qsuit thresh', Qsuit)
+    # cv2.imshow('Qrank thresh', Qrank)
+    # cv2.imshow('Qsuit thresh', Qsuit)
 
     # Find rank contour and bounding rectangle, isolate and find largest contour
     Qrank_cnts, hier = cv2.findContours(Qrank, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -344,12 +290,18 @@ def match_card(qCard, train_ranks, train_suits):
     # Combine best rank match and best suit match to get query card's identity.
     # If the best matches have too high of a difference value, card identity
     # is still Unknown
-    if (best_rank_match_diff < RANK_DIFF_MAX):
+    if best_rank_match_diff < RANK_DIFF_MAX:
         best_rank_match_name = best_rank_name
 
-    if (best_suit_match_diff < SUIT_DIFF_MAX):
+    if best_suit_match_diff < SUIT_DIFF_MAX:
         best_suit_match_name = best_suit_name
 
+    # Shorten the name since we match on pics with weird names.
+    best_suit_match_list = best_suit_match_name.split('_')
+    best_suit_match_name = best_suit_match_list[0]
+
+    best_rank_match_list = best_rank_match_name.split('_')
+    best_rank_match_name = best_rank_match_list[0]
 
     # Return the identiy of the card and the quality of the suit and rank match
     return best_rank_match_name, best_suit_match_name, best_rank_match_diff, best_suit_match_diff
@@ -387,12 +339,11 @@ def flattener(image, pts):
     Returns the flattened, re-sized, grayed image.
     See www.pyimagesearch.com/2014/08/25/4-point-opencv-getperspective-transform-example/"""
     temp_rect = np.zeros((4, 2), dtype="float32")
-
-    # h er altid lig med h = 1.5w
-    # Vi starter med at udregne hvor vores 4 kort er i forhold til vores kort.
-
+    s = np.sum(pts, axis=1)
+    # Vi starter med at udregne hvor vores 4 hjørner er i forhold til vores kort.
+    # Bare 4 store tal
     topcornerlist = np.array([[1000000, 10000000], [100000000, 100000000]])
-
+    # Loop over for at finde de to øverste punkter
     for corn in pts:
         if corn[1] < topcornerlist[0][1]:
             topcornerlist[1] = topcornerlist[0]
@@ -402,7 +353,7 @@ def flattener(image, pts):
             topcornerlist[1] = corn
 
     bottomcornerlist = np.array([[0, 0], [0, 0]])
-
+    # Loop til at finde de to nederste
     for corn in pts:
         if corn[1] > bottomcornerlist[0][1]:
             bottomcornerlist[1] = bottomcornerlist[0]
@@ -413,10 +364,22 @@ def flattener(image, pts):
 
     # Please være søde ikke at rette i det her - Gustav
 
+    # Denne udregning er hvis kortet står i en 90* vinkel, og hælder derfor hverken mod venstre eller højre
+    if int(topcornerlist[0][1]) == int(topcornerlist[1][1]):
+        temp_rect[0] = pts[np.argmin(s)]
+        temp_rect[2] = pts[np.argmax(s)]
+        # now, compute the difference between the points, the
+        # top-right point will have the smallest difference,
+        # whereas the bottom-left will have the largest difference
+        diff = np.diff(pts, axis=1)
+        temp_rect[1] = pts[np.argmin(diff)]
+        temp_rect[3] = pts[np.argmax(diff)]
+
     # Hvis kortet hælder mod højre
-    # top1 = venstre hjørne, top2 = højre
-    # bot1 = højre hjørne bot2 = venstre hjørne
-    if topcornerlist[0][0] <= topcornerlist[1][0]:
+    # top1 er venstre hjørne, top2 er højre hjørne
+    # bot1 er højre hjørne bot2 er venstre hjørne
+
+    elif topcornerlist[0][0] < topcornerlist[1][0]:
         temp_rect[0] = topcornerlist[0]
         temp_rect[1] = topcornerlist[1]
         temp_rect[2] = bottomcornerlist[0]
@@ -427,13 +390,8 @@ def flattener(image, pts):
         temp_rect[1] = topcornerlist[0]
         temp_rect[2] = bottomcornerlist[1]
         temp_rect[3] = bottomcornerlist[0]
-        # if (bottomcornerlist[0][1] < bottomcornerlist[1][1]):
-        #    temp_rect[0] = br
-       #     temp_rect[3] = bl
-       # else:
-        #    temp_rect[0] = br
-        #    temp_rect[3] = bl
 
+    # de her tal definerer det 200x300 warp vi trækker ud.
     maxWidth = 200
     maxHeight = 300
 
@@ -449,28 +407,29 @@ def flattener(image, pts):
 def CalculateCardPosition(crns, image):
     runs = False
     cornerlist = np.array([[0, 0], [0, 0]])
-    # Finder de to højeste y værdier i vores array. De højeste yværdier er de nederste punkter.
+    # Finder de to højeste y værdier i vores array. De højeste y-værdier er de nederste punkter.
+
     for corn in crns:
-        if corn[1] > cornerlist[0][1]:
+        if corn[1] >= cornerlist[0][1]:
             cornerlist[1] = cornerlist[0]
             cornerlist[0] = corn
 
-        elif corn[1] > cornerlist[1][1]:
+        elif corn[1] >= cornerlist[1][1]:
             cornerlist[1] = corn
 
     while True:
         vector = None
-        if cornerlist[1][0] < cornerlist[0][0]:
+        if cornerlist[1][0] <= cornerlist[0][0]:
             vector = cornerlist[1] - cornerlist[0]
         else:
             vector = cornerlist[0] - cornerlist[1]
 
         # Den ortogonale vektor bruges til at udrenge approximationen for de to top punkter.
-        orthogonal_vector = [-1.5*vector[1], 1.5*vector[0]]
+        orthogonal_vector = [-1*WIDTH_TO_HEIGHT_RATIO*vector[1], WIDTH_TO_HEIGHT_RATIO*vector[0]]
         # width
         w = math.sqrt(math.pow(vector[0], 2) + math.pow(vector[1], 2))
         # height
-        h = w*1.5
+        h = w * WIDTH_TO_HEIGHT_RATIO
 
         topcorner1 = cornerlist[0] + orthogonal_vector
         topcorner2 = cornerlist[1] + orthogonal_vector
@@ -535,10 +494,10 @@ def houghLinesCorners(image,b1,b2,t1,t2):
         return None
     løl = cv2.resize(løl, (0, 0), fx=magfactor, fy=magfactor) # magnify løl by the magfactor for better line/ edge detection
 
-    edges = cv2.Canny(løl, 128, 512, apertureSize=3) # find edges
+    edges = cv2.Canny(løl, 128, 480, apertureSize=3) # find edges
 
-    #cv2.circle(løl, (cropX1, cropY1), 6, (255, 0, 255), -1)
-    #cv2.circle(løl, (cropX2, cropY2), 6, (255, 0, 255), -1)
+    ##cv2.circle(image, (cropX1, cropY1), 6, (255, 0, 255), -1)
+    ##cv2.circle(image, (cropX2, cropY2), 6, (255, 0, 255), -1)
 
     lines = cv2.HoughLines(edges, 1, np.pi / 180, 150) #
     # lines = [[[-184, 3.0717795]]]
@@ -739,9 +698,23 @@ def houghLinesCorners(image,b1,b2,t1,t2):
             y1 = int(y0 + 1000 * (a))
             x2 = int(x0 - 1000 * (-b))
             y2 = int(y0 - 1000 * (a))
+    """
+def rank_converter(rank):
+    switcher = {
+        "ACE": "1",
+        "TWO": "2",
+        "THREE": "3",
+        "FOUR": "4",
+        "FIVE": "5",
+        "SIX": "6",
+        "SEVEN": "7",
+        "EIGHT": "8",
+        "NINE": "9",
+        "TEN": "10",
+        "JACK": "J",
+        "QUEEN": "Q",
+        "KING": "K",
+        "UNKNOWN": "U"
+    }
+    return switcher.get(rank, " ")
 
-            # cv2.line(frame, (x1, y1), (x2, y2), (188, 0, 188), 2)
-            cv2.line(edges, (x1, y1), (x2, y2), (188, 0, 188), 1)
-            """
-
-    """-----------------------------------------------------------------"""

@@ -14,7 +14,7 @@ def matrixcalc ():
     objpoints = [] # 3d point in real world space
     imgpoints = [] # 2d points in image plane.
 
-    images = glob.glob('training_imgs/chessboards/*.JPG')
+    images = glob.glob('training_imgs/chessboard/*.JPG')
     for fname in images:
         img = cv2.imread(fname)
         gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
@@ -31,31 +31,14 @@ def matrixcalc ():
 
             # Draw and display the corners
             img = cv2.drawChessboardCorners(img, (6, 9), corners2,ret)
-            # cv2.imshow('img',img)
-            # cv2.waitKey(500)
+            cv2.imshow('img',img)
+            cv2.waitKey(1000)
 
     ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1],None,None)
 
     np.save('Callibration_files/mtx_gustav.npy', mtx)
     np.save('Callibration_files/dist_gustav.npy', dist)
-    return mtx, dist
 
-    img = cv2.imread('training_imgs/chessboards/IMG_0833.JPG')
-    h,  w = img.shape[:2]
-    newcameramtx, roi=cv2.getOptimalNewCameraMatrix(mtx,dist,(w,h),1,(w,h))
-
-    # undistort
-    mapx,mapy = cv2.initUndistortRectifyMap(mtx,dist,None,newcameramtx,(w,h),5)
-    dst = cv2.remap(img,mapx,mapy,cv2.INTER_LINEAR)
-
-    # crop the image
-    x,y,w,h = roi
-    cv2.imwrite('calibresult.png', dst[y:y + h, x:x + w])
-
-    np.save('Callibration_files/callibration_gustav.npy', dst[y:y + h, x:x + w])  # save
-
-    cv2.destroyAllWindows()
-
-    return dst
 
 matrixcalc()
+
