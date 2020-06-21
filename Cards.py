@@ -492,12 +492,13 @@ def CalculateCardPosition(crns, image):
 def houghLinesCorners(image,b1,b2,t1,t2):
     """---------------------Hough Lines---------------------------"""
 
+    # Finds Maximum and minimum x and y af the points supplied to find where to crop the image
     xmin = None
     xmax = None
     ymin = None
     ymax = None
     for p in [b1,b2,t1,t2]:
-        if xmin is None:
+        if xmin is None: # Initialise the variables
             xmin = p[0]
         if xmax is None:
             xmax = p[0]
@@ -506,7 +507,7 @@ def houghLinesCorners(image,b1,b2,t1,t2):
         if ymax is None:
             ymax = p[1]
 
-        if p[0] < xmin:
+        if p[0] < xmin: # Find min and max
             xmin = p[0]
         elif p[0] > xmax:
             xmax = p[0]
@@ -515,31 +516,31 @@ def houghLinesCorners(image,b1,b2,t1,t2):
         elif p[1] > ymax:
             ymax = p[1]
 
-    offsetX1 = -8
+    offsetX1 = -8 # An adjustable offset to fine tune the cropping
     offsetX2 = 8
     offsetY1 = 40
     offsetY2 = 20
 
-    cropX1 = int(np.heaviside(0,xmin + offsetX1))
-    cropX2 = int(np.heaviside(0,xmax + offsetX2))
+    cropX1 = int(np.heaviside(0,xmin + offsetX1)) # Uses the heavyside/unit step function to make sure that the cropping points
+    cropX2 = int(np.heaviside(0,xmax + offsetX2)) # are inside the picture i.e. if they are < 0 make them 0
     cropY1 = int(np.heaviside(0,ymin + offsetY1))
     cropY2 = int(np.heaviside(0,ymax + offsetY2))
 
-    magfactor = 2
+    magfactor = 2 # factor for magnifying the image that is being worked on, called løl "name subject to change"
 
     cv2.imshow("what i crop", image)
-    løl = image[cropY1:cropY2, cropX1:cropX2]
-    if len(løl) == 0:
-        print("bad search")
+    løl = image[cropY1:cropY2, cropX1:cropX2] # The function works on a cropped and magnified image "løl"
+    if len(løl) == 0: # if "løl" is empty, due to bad cropping or bad points fed to the function,
+        print("bad search") # return non and print bad search
         return None
-    løl = cv2.resize(løl, (0, 0), fx=magfactor, fy=magfactor)
+    løl = cv2.resize(løl, (0, 0), fx=magfactor, fy=magfactor) # magnify løl by the magfactor for better line/ edge detection
 
-    edges = cv2.Canny(løl, 128, 512, apertureSize=3)
+    edges = cv2.Canny(løl, 128, 512, apertureSize=3) # find edges
 
-    cv2.circle(løl, (cropX1, cropY1), 6, (255, 0, 255), -1)
-    cv2.circle(løl, (cropX2, cropY2), 6, (255, 0, 255), -1)
+    #cv2.circle(løl, (cropX1, cropY1), 6, (255, 0, 255), -1)
+    #cv2.circle(løl, (cropX2, cropY2), 6, (255, 0, 255), -1)
 
-    lines = cv2.HoughLines(edges, 1, np.pi / 180, 150)
+    lines = cv2.HoughLines(edges, 1, np.pi / 180, 150) #
     # lines = [[[-184, 3.0717795]]]
     # print(lines)
     vlines = []
