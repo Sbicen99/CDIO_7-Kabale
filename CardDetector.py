@@ -68,7 +68,7 @@ while cam_quit == 0:
     ###### image = cv2.imread(path + '/training_imgs/temp-test.jpg')
 
     ret, frame = cap.read()
-    cv2.imshow('uredigeret', frame)
+    #cv2.imshow('uredigeret', frame)
     # frame = cv2.imread('hough_line.png')
     # frame = cv2.imread('training_imgs/stack.JPG')
 
@@ -80,7 +80,7 @@ while cam_quit == 0:
     cnts_sort, cnt_is_card, crns = Cards.find_cards(pre_proc)
 
     if crns is not None:
-        w, h, top1, top2, bot1, bot2 = Cards.CalculateCardPosition(crns)
+        w, h, top1, top2, bot1, bot2 = Cards.CalculateCardPosition(crns, frame)
         crns = [bot1, bot2, top1, top2]
         cv2.circle(frame, (int(top1[0]), int(top1[1])), 6, (0, 255, 255), -1)
         cv2.circle(frame, (int(top2[0]), int(top2[1])), 6, (0, 255, 255), -1)
