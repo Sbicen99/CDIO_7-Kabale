@@ -18,7 +18,6 @@ import os
 import Cards
 import extractimages
 import sched, time
-from PIL import Image
 
 ## Camera settings
 

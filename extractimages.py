@@ -1,7 +1,3 @@
-from PIL import Image
-import cv2
-import time
-
 def getimages(im):
     width, height, channel = im.shape
     # The box is a 4-tuple defining the left, upper, right, and lower pixel coordinate.

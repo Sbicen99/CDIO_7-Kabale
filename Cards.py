@@ -12,7 +12,6 @@ import numpy as np
 import os
 import math
 import os
-from PIL import Image
 
 # Constants #
 
@@ -484,9 +483,9 @@ def houghLinesCorners(image,b1,b2,t1,t2):
     cropY1 = int(np.heaviside(0,ymin + offsetY1))
     cropY2 = int(np.heaviside(0,ymax + offsetY2))
 
-    magfactor = 2
+    magfactor = 6
 
-    # cv2.imshow("what i crop", image)
+    cv2.imshow("what i crop", image)
     løl = image[cropY1:cropY2, cropX1:cropX2]
     if len(løl) == 0:
         print("bad search")
@@ -526,7 +525,6 @@ def houghLinesCorners(image,b1,b2,t1,t2):
             y1 = int(y0 + 1000 * (a))
             x2 = int(x0 - 1000 * (-b))
             y2 = int(y0 - 1000 * (a))
-
             #cv2.line(frame, (x1, y1), (x2, y2), (188, 0, 188), 2)
             cv2.line(edges, (x1, y1), (x2, y2), (188, 0, 188), 1)
             """
@@ -558,6 +556,131 @@ def houghLinesCorners(image,b1,b2,t1,t2):
         for i in vlines:
             rho = i[0][0]
             theta = i[0][1]
+
+            a = np.cos(theta)
+            b = np.sin(theta)
+            x0 = a * rho
+            y0 = b * rho
+            x1 = int(x0 + 1000 * (-b))
+            y1 = int(y0 + 1000 * (a))
+            x2 = int(x0 - 1000 * (-b))
+            y2 = int(y0 - 1000 * (a))
+
+            # cv2.line(frame, (x1, y1), (x2, y2), (188, 0, 188), 2)
+            cv2.line(edges, (x1, y1), (x2, y2), (188, 0, 188), 1)
+
+        for i in hlines:
+            rho = i[0][0]
+            theta = i[0][1]
+
+            a = np.cos(theta)
+            b = np.sin(theta)
+            x0 = a * rho  # Find the first coordinate of the point on the line where it is orthogonal with the line to origin
+            y0 = b * rho  # Find seccond coordinate here
+            x1 = int(x0 + 1000 * (-b))
+            y1 = int(y0 + 1000 * (a))
+            x2 = int(x0 - 1000 * (-b))
+            y2 = int(y0 - 1000 * (a))
+
+            # cv2.line(frame, (x1, y1), (x2, y2), (188, 0, 188), 2)
+            cv2.line(edges, (x1, y1), (x2, y2), (188, 0, 188), 1)
+
+        if len(vlines) == 2 and len(hlines) > 0:
+
+            rline = 0
+            lline = 0
+            bline = hlines[0]
+
+            if abs(vlines[0][0][0]) > abs(vlines[1][0][0]):
+                rline = vlines[0]
+                lline = vlines[1]
+            else:
+                rline = vlines[1]
+                lline = vlines[0]
+
+            for ln in hlines:
+                if abs(ln[0][0]) > abs(bline[0][0]):
+                    bline = ln
+
+            # Calculate instersections
+            intersections = []
+
+            ah = -(np.cos(bline[0][1]) / np.sin(bline[0][1]))
+            bh = bline[0][0] / np.sin(bline[0][1])
+
+            for vl in [lline, rline]:
+
+                if vl[0][1] == 0:  # if the current vertical line is exactly vertical (slope of line = ∞) with theta = 0
+                    pointX = vl[0][0]
+                    pointY = ah * pointX + bh
+
+                elif vl[0][1] == np.pi:  # if theta = pi (perfectly vertical line flipped 180 degrees)
+                    pointX = -vl[0][0]
+                    pointY = ah * pointX + bh
+
+                else:
+                    av = -(np.cos(vl[0][1]) / np.sin(vl[0][1]))
+                    bv = vl[0][0] / np.sin(vl[0][1])
+
+                    pointX = (bh - bv) / (av - ah)
+                    pointY = (av * bh - ah * bv) / (av - ah)
+
+                intersections.append([pointX, pointY])
+
+            estimates = []
+
+            sideRelationFactor = 1.5
+
+            # Pythagoras theorem to find distance between intersections
+            intrsctwidth = np.sqrt(((intersections[1][0] - intersections[0][0]) ** 2) + ((intersections[1][1] - intersections[0][1]) ** 2))
+
+            # calculates the angle between the x-axis and the line for each side of the card
+            if lline[0][0] >= 0:
+                lsideangle = (lline[0][1] + 3*np.pi/2) % (2*np.pi)
+            else:
+                lsideangle = (lline[0][1] + np.pi / 2) % (2 * np.pi)
+
+            if rline[0][0] >= 0:
+                rsideangle = (rline[0][1] + 3*np.pi/2) % (2*np.pi)
+            else:
+                rsideangle = (rline[0][1] + np.pi / 2) % (2 * np.pi)
+
+            lestimate = [intersections[0][0] + np.cos(lsideangle) * intrsctwidth * sideRelationFactor,
+                         intersections[0][1] + np.sin(lsideangle) * intrsctwidth * sideRelationFactor]
+
+            restimate = [intersections[1][0] + np.cos(rsideangle) * intrsctwidth * sideRelationFactor,
+                         intersections[1][1] + np.sin(rsideangle) * intrsctwidth * sideRelationFactor]
+
+            intersections.append(lestimate)
+            intersections.append(restimate)
+
+            cv2.circle(edges, (int(intersections[0][0]), int(intersections[0][1])), 6, (0, 255, 255), -1)
+            cv2.circle(edges, (int(intersections[1][0]), int(intersections[1][1])), 6, (0, 255, 255), -1)
+            cv2.circle(løl, (int(restimate[0]), int(restimate[1])), 6, (0, 255, 255), -1)
+            cv2.circle(løl, (int(lestimate[0]), int(lestimate[1])), 6, (0, 255, 255), -1)
+
+            #cv2.circle(løl, (int(intersections[0][0]), int(intersections[0][1])), 6, (0, 255, 255), -1)
+            #cv2.circle(løl, (int(intersections[1][0]), int(intersections[1][1])), 6, (0, 255, 255), -1)
+
+            for p in intersections:
+                p[0] = p[0] / magfactor
+                p[1] = p[1] / magfactor
+
+                p[0] += cropX1
+                p[1] += cropY1
+
+            #cv2.circle(image, (int(intersections[0][0]), int(intersections[0][1])), 6, (0, 255, 255), -1)
+            #cv2.circle(image, (int(intersections[1][0]), int(intersections[1][1])), 6, (0, 255, 255), -1)
+
+            print("Have found lines")
+            #cv2.imshow("Løl", løl)
+            cv2.imshow("Lines", edges)
+            return intersections
+
+    print("have not found lines")
+    # cv2.imshow("Løl", løl)
+    cv2.imshow("Lines", edges)
+    return None
 
 
 def rank_converter(rank):
