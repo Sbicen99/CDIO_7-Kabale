@@ -22,7 +22,7 @@ from PIL import Image
 ## Define font to use
 font = cv2.FONT_HERSHEY_SIMPLEX
 # Initialize camera object and video feed from the camera. The video stream is set up
-# as a seperate thread that constantly grabs frames from the camera feed. 
+# as a seperate thread that constantly grabs frames from the camera feed.
 # See VideoStream.py for VideoStream class definition
 ## IF USING USB CAMERA INSTEAD OF PICAMERA,
 ## CHANGE THE THIRD ARGUMENT FROM 1 TO 2 IN THE FOLLOWING LINE:
@@ -66,6 +66,7 @@ frame_rate_calc = 1
 freq = cv2.getTickFrequency()
 
 cam_quit = 0  # Loop control variable
+
 while cam_quit == 0:
 
     # Grab frame from video stream
