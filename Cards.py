@@ -491,7 +491,10 @@ def houghLinesCorners(image,b1,b2,t1,t2):
     if len(løl) == 0:
         print("bad search")
         return None
-    løl = cv2.resize(løl, (0, 0), fx=magfactor, fy=magfactor)
+    try:
+        løl = cv2.resize(løl, (0, 0), fx=magfactor, fy=magfactor)
+    except:
+        return None
 
     edges = cv2.Canny(løl, 128, 512, apertureSize=3)
 

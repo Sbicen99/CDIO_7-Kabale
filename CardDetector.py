@@ -32,20 +32,32 @@ def writeCardJson(i: int):
         }
 
 def writeCardJson2(i: int):
-    with open('kabalen2.json') as f:
+    try:
+        f = open('kabalen2.json',)
         data = json.load(f)
+    except:
+        data = {
+            "waste": None,
+            "tableau1": None,
+            "tableau2": None,
+            "tableau3": None,
+            "tableau4": None,
+            "tableau5": None,
+            "tableau6": None,
+            "tableau7": None,
+        }
 
     if i < 7:
-        card1 = data['tableau' + str(i)]
+        card1 = data['tableau' + str(i + 1)]
     else:
         card1 = data['waste']
 
     newCard = cards[i]
-    newSuit = cards[i].best_suit_match[0]
-    newRank = Cards.rank_converter(cards[i].best_rank_match.upper())
-
     if newCard is None:
         return None
+
+    newSuit = cards[i].best_suit_match[0]
+    newRank = Cards.rank_converter(cards[i].best_rank_match.upper())
 
     if card1 is None:
         return {
@@ -54,22 +66,22 @@ def writeCardJson2(i: int):
         }
     else:
         return {
-            "suit": newSuit if newSuit != "Unknown" else card1["suit"],
-            "rank": newRank if newRank != "Unknown" else card1["rank"]
+            "suit": newSuit if newSuit != "U" else card1["suit"],
+            "rank": newRank if newRank != "U" else card1["rank"]
         }
 
 ## Camera settings
 
 def writeJson():
     cardsJson = {
-        "waste": writeCardJson2(0),
-        "tableau1": writeCardJson2(1),
-        "tableau2": writeCardJson2(2),
-        "tableau3": writeCardJson2(3),
-        "tableau4": writeCardJson2(4),
-        "tableau5": writeCardJson2(5),
-        "tableau6": writeCardJson2(6),
-        "tableau7": writeCardJson2(7),
+        "waste": writeCardJson2(7),
+        "tableau1": writeCardJson2(0),
+        "tableau2": writeCardJson2(1),
+        "tableau3": writeCardJson2(2),
+        "tableau4": writeCardJson2(3),
+        "tableau5": writeCardJson2(4),
+        "tableau6": writeCardJson2(5),
+        "tableau7": writeCardJson2(6),
     }
     return json.dumps(cardsJson)
 
@@ -100,7 +112,7 @@ dist = np.load('Callibration_files/dist_gustav.npy')
 input_from_user = input("If you want to use computer webcam press 1, "
                         "for IP Cam Server press ENTER ")
 if input_from_user == '1':
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(1)
     time.sleep(1)
 else:
     pasted_URL = input("Paste the IP Camera Server URL ")
@@ -242,8 +254,9 @@ while cam_quit == 0:
     if framecounter >= int(frame_rate_calc):
         framecounter = 0
         # print('Updated json')
+        data = writeJson()
         with open('kabalen2.json', 'w') as f:
-            f.write(writeJson())
+            f.write(data)
     # This saves the cards names in a file and also cutting it down to its initials.
     i = 1
     if key == ord("p"):
