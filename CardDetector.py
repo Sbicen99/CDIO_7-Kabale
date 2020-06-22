@@ -254,6 +254,13 @@ while cam_quit == 0:
     if framecounter >= int(frame_rate_calc):
         framecounter = 0
         # print('Updated json')
+
+        with open('message.txt', 'r+') as f:
+            if f.readline() == "clear":
+                f.truncate(0)
+
+
+
         data = writeJson()
         with open('kabalen2.json', 'w') as f:
             f.write(data)
