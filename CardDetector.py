@@ -30,6 +30,45 @@ def writeCardJson(cards, i: int):
             "rank": Cards.rank_converter(cards[i].best_rank_match.upper())
         }
 
+def writeCardJson2(i: int):
+    try:
+        f = open('kabalen2.json',)
+        data = json.load(f)
+    except:
+        data = {
+            "waste": None,
+            "tableau1": None,
+            "tableau2": None,
+            "tableau3": None,
+            "tableau4": None,
+            "tableau5": None,
+            "tableau6": None,
+            "tableau7": None,
+        }
+
+    if i < 7:
+        card1 = data['tableau' + str(i + 1)]
+    else:
+        card1 = data['waste']
+
+    newCard = cards[i]
+    if newCard is None:
+        return None
+
+    newSuit = cards[i].best_suit_match[0]
+    newRank = Cards.rank_converter(cards[i].best_rank_match.upper())
+
+    if card1 is None:
+        return {
+            "suit": newSuit,
+            "rank": newRank
+        }
+    else:
+        return {
+            "suit": newSuit if newSuit != "U" else card1["suit"],
+            "rank": newRank if newRank != "U" else card1["rank"]
+        }
+
 ## Camera settings
 
 def writeJson(cards):
@@ -218,8 +257,17 @@ while cam_quit == 0:
     if framecounter >= int(frame_rate_calc):
         framecounter = 0
         # print('Updated json')
+
+        with open('message.txt', 'r+') as f:
+            if f.readline() == "clear":
+                f.truncate(0)
+
+
+
+        data = writeJson()
         with open('kabalen2.json', 'w') as f:
             f.write(writeJson(cards))
+            f.write(data)
     # This saves the cards names in a file and also cutting it down to its initials.
     i = 1
 
