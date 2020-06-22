@@ -9,9 +9,9 @@
 import cv2
 # Import necessary packages
 import numpy as np
-import os
 import math
 import os
+from scipy.spatial import distance
 
 # Constants #
 
@@ -57,6 +57,11 @@ def preprocces_image(image):
 
 
 # Structures to hold query card and train card information #
+
+def distances(xy1, xy2):
+    d0 = np.subtract.outer(xy1[:,0], xy2[:,0])
+    d1 = np.subtract.outer(xy1[:,1], xy2[:,1])
+    return np.hypot(d0, d1)
 
 class Query_card:
     """Structure to store information about query cards in the camera image."""
@@ -175,7 +180,7 @@ def find_cards(thresh_image):
     return cnts_sort, cnt_is_card, crns
 
 
-def preprocess_card(image, pts, w, h):
+def preprocess_card(image, pts, w, h, qCard):
     """Uses contour to find information about the query card. Isolates rank
     and suit images from the card."""
 
@@ -304,6 +309,15 @@ def match_card(qCard, train_ranks, train_suits):
     best_rank_match_name = best_rank_match_list[0]
 
     # Return the identiy of the card and the quality of the suit and rank match
+    if best_rank_match_name == "Unknown" and best_suit_match_name == "Unknown":
+        return qCard.best_rank_match, qCard.best_suit_match, best_rank_match_diff, best_suit_match_diff
+
+    elif best_rank_match_name == "Unknown":
+        return qCard.best_rank_match, best_suit_match_name, best_rank_match_diff, best_suit_match_diff
+
+    elif best_suit_match_name == "Unknown":
+        return best_rank_match_name, qCard.best_suit_match, best_rank_match_diff, best_suit_match_diff
+
     return best_rank_match_name, best_suit_match_name, best_rank_match_diff, best_suit_match_diff
 
 
@@ -404,10 +418,13 @@ def flattener(image, pts):
 
     return warp
 
-def CalculateCardPosition(crns, image):
+
+def CalculateCardPosition(crns, image, oldlines):
+
     runs = False
     cornerlist = np.array([[0, 0], [0, 0]])
     # Finder de to højeste y værdier i vores array. De højeste y-værdier er de nederste punkter.
+
     for corn in crns:
         if corn[1] >= cornerlist[0][1]:
             cornerlist[1] = cornerlist[0]
@@ -433,7 +450,7 @@ def CalculateCardPosition(crns, image):
         topcorner1 = cornerlist[0] + orthogonal_vector
         topcorner2 = cornerlist[1] + orthogonal_vector
 
-        intersections = houghLinesCorners(image, cornerlist[0],cornerlist[1],topcorner1,topcorner2)
+        intersections = houghLinesCorners(image, cornerlist[0],cornerlist[1], topcorner1,topcorner2, oldlines)
         if intersections == None or runs == True:
             if runs is True:
                 cv2.putText(image, ("Locked!"), (500, 50), font, 1, (0, 255, 0), 3, cv2.LINE_AA)
@@ -443,19 +460,20 @@ def CalculateCardPosition(crns, image):
             return w, h, topcorner1, topcorner2, cornerlist[0], cornerlist[1]
         cornerlist[0] = intersections[0]
         cornerlist[1] = intersections[1]
-        topcorner1 = intersections[2]
-        topcorner2 = intersections[3]
+        # topcorner1 = intersections[2]
+        # topcorner2 = intersections[3]
         runs = True
 
-def houghLinesCorners(image,b1,b2,t1,t2):
+def houghLinesCorners(image,b1,b2,t1,t2, oldintersections):
     """---------------------Hough Lines---------------------------"""
 
+    # Finds Maximum and minimum x and y af the points supplied to find where to crop the image
     xmin = None
     xmax = None
     ymin = None
     ymax = None
     for p in [b1,b2,t1,t2]:
-        if xmin is None:
+        if xmin is None: # Initialise the variables
             xmin = p[0]
         if xmax is None:
             xmax = p[0]
@@ -464,7 +482,7 @@ def houghLinesCorners(image,b1,b2,t1,t2):
         if ymax is None:
             ymax = p[1]
 
-        if p[0] < xmin:
+        if p[0] < xmin: # Find min and max
             xmin = p[0]
         elif p[0] > xmax:
             xmax = p[0]
@@ -473,35 +491,55 @@ def houghLinesCorners(image,b1,b2,t1,t2):
         elif p[1] > ymax:
             ymax = p[1]
 
-    offsetX1 = -8
+    offsetX1 = -8 # An adjustable offset to fine tune the cropping
     offsetX2 = 8
     offsetY1 = 40
     offsetY2 = 20
 
-    cropX1 = int(np.heaviside(0,xmin + offsetX1))
-    cropX2 = int(np.heaviside(0,xmax + offsetX2))
+    cropX1 = int(np.heaviside(0,xmin + offsetX1)) # Uses the heavyside/unit step function to make sure that the cropping points
+    cropX2 = int(np.heaviside(0,xmax + offsetX2)) # are inside the picture i.e. if they are < 0 make them 0
     cropY1 = int(np.heaviside(0,ymin + offsetY1))
     cropY2 = int(np.heaviside(0,ymax + offsetY2))
 
-    magfactor = 6
+    magfactor = 2 # factor for magnifying the image that is being worked on, called løl "name subject to change"
 
-    cv2.imshow("what i crop", image)
-    løl = image[cropY1:cropY2, cropX1:cropX2]
-    if len(løl) == 0:
-        print("bad search")
+    # cv2.imshow("what i crop", image)
+    lel = image[cropY1:cropY2, cropX1:cropX2] # The function works on a cropped and magnified image "løl"
+    if len(lel) == 0: # if "løl" is empty, due to bad cropping or bad points fed to the function,
+        print("bad search") # return non and print bad search
         return None
-    løl = cv2.resize(løl, (0, 0), fx=magfactor, fy=magfactor)
 
-    edges = cv2.Canny(løl, 128, 512, apertureSize=3)
+    # Hvis kortet ligger helt ude til siden prøver den at tage et billede udenfor billedet, og den exception skal fanges
+    try:
+        lel = cv2.resize(lel, (0, 0), fx=magfactor, fy=magfactor) # magnify løl by the magfactor for better line/ edge detection
+    except cv2.error:
+        return None
 
-    cv2.circle(løl, (cropX1, cropY1), 6, (255, 0, 255), -1)
-    cv2.circle(løl, (cropX2, cropY2), 6, (255, 0, 255), -1)
+    edges = cv2.Canny(lel, 150, 265, apertureSize=3) # find edges
 
-    lines = cv2.HoughLines(edges, 1, np.pi / 180, 150)
+    ##cv2.circle(image, (cropX1, cropY1), 6, (255, 0, 255), -1)
+    ##cv2.circle(image, (cropX2, cropY2), 6, (255, 0, 255), -1)
+
+    lines = cv2.HoughLines(edges, 1, np.pi / 180, 125) #
     # lines = [[[-184, 3.0717795]]]
     # print(lines)
     vlines = []
     hlines = []
+
+    # Returnerer vi ikke bare de gamle her?
+    if len(oldintersections[0]) != 0 and lines is None:
+        if distance.euclidean(oldintersections[0], b1) > distance.euclidean(oldintersections[1], b1):
+            if distance.euclidean(oldintersections[1],b1) > 200:
+                return [b1,b2]
+            else:
+                return oldintersections
+        else:
+            if distance.euclidean(oldintersections[1],b1) > 200:
+                return [b1,b2]
+            else:
+                return oldintersections
+
+
     if lines is not None:
         #print("found lines")
         for i in lines:
@@ -525,6 +563,7 @@ def houghLinesCorners(image,b1,b2,t1,t2):
             y1 = int(y0 + 1000 * (a))
             x2 = int(x0 - 1000 * (-b))
             y2 = int(y0 - 1000 * (a))
+
             #cv2.line(frame, (x1, y1), (x2, y2), (188, 0, 188), 2)
             cv2.line(edges, (x1, y1), (x2, y2), (188, 0, 188), 1)
             """
@@ -656,8 +695,8 @@ def houghLinesCorners(image,b1,b2,t1,t2):
 
             cv2.circle(edges, (int(intersections[0][0]), int(intersections[0][1])), 6, (0, 255, 255), -1)
             cv2.circle(edges, (int(intersections[1][0]), int(intersections[1][1])), 6, (0, 255, 255), -1)
-            cv2.circle(løl, (int(restimate[0]), int(restimate[1])), 6, (0, 255, 255), -1)
-            cv2.circle(løl, (int(lestimate[0]), int(lestimate[1])), 6, (0, 255, 255), -1)
+            cv2.circle(lel, (int(restimate[0]), int(restimate[1])), 6, (0, 255, 255), -1)
+            cv2.circle(lel, (int(lestimate[0]), int(lestimate[1])), 6, (0, 255, 255), -1)
 
             #cv2.circle(løl, (int(intersections[0][0]), int(intersections[0][1])), 6, (0, 255, 255), -1)
             #cv2.circle(løl, (int(intersections[1][0]), int(intersections[1][1])), 6, (0, 255, 255), -1)
@@ -673,16 +712,36 @@ def houghLinesCorners(image,b1,b2,t1,t2):
             #cv2.circle(image, (int(intersections[1][0]), int(intersections[1][1])), 6, (0, 255, 255), -1)
 
             print("Have found lines")
-            #cv2.imshow("Løl", løl)
+            cv2.imshow("Lel", lel)
             cv2.imshow("Lines", edges)
+
+            if len(oldintersections[0]) != 0:
+                if distance.euclidean(oldintersections[0], b1) < distance.euclidean(intersections[0], b1):
+                    return oldintersections
+                else:
+                    return intersections
+
             return intersections
 
     print("have not found lines")
-    # cv2.imshow("Løl", løl)
+    cv2.imshow("Lel", lel)
     cv2.imshow("Lines", edges)
     return None
 
+    """
+        for i in [bline]:
+            rho = i[0][0]
+            theta = i[0][1]
 
+            a = np.cos(theta)
+            b = np.sin(theta)
+            x0 = a * rho  # Find the first coordinate of the point on the line where it is orthogonal with the line to origin
+            y0 = b * rho  # Find seccond coordinate here
+            x1 = int(x0 + 1000 * (-b))
+            y1 = int(y0 + 1000 * (a))
+            x2 = int(x0 - 1000 * (-b))
+            y2 = int(y0 - 1000 * (a))
+    """
 def rank_converter(rank):
     switcher = {
         "ACE": "1",
