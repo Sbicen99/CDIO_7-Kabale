@@ -261,12 +261,13 @@ while cam_quit == 0:
         with open('message.txt', 'r+') as f:
             if f.readline() == "clear":
                 f.truncate(0)
+                qCard = Cards.Query_card()
+                cards = [qCard] * 8
 
 
 
-        data = writeJson()
+        data = writeJson(cards)
         with open('kabalen2.json', 'w') as f:
-            f.write(writeJson(cards))
             f.write(data)
     # This saves the cards names in a file and also cutting it down to its initials.
     i = 1
