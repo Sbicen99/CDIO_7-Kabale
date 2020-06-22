@@ -11,7 +11,7 @@ import cv2
 import numpy as np
 import math
 import os
-
+from scipy.spatial import distance
 
 # Constants #
 
@@ -57,6 +57,11 @@ def preprocces_image(image):
 
 
 # Structures to hold query card and train card information #
+
+def distances(xy1, xy2):
+    d0 = np.subtract.outer(xy1[:,0], xy2[:,0])
+    d1 = np.subtract.outer(xy1[:,1], xy2[:,1])
+    return np.hypot(d0, d1)
 
 class Query_card:
     """Structure to store information about query cards in the camera image."""
@@ -175,12 +180,11 @@ def find_cards(thresh_image):
     return cnts_sort, cnt_is_card, crns
 
 
-def preprocess_card(image, pts, w, h):
+def preprocess_card(image, pts, w, h, qCard):
     """Uses contour to find information about the query card. Isolates rank
     and suit images from the card."""
 
     # Initialize new Query_card object
-    qCard = Query_card()
 
     qCard.corner_pts = pts
 
@@ -304,6 +308,15 @@ def match_card(qCard, train_ranks, train_suits):
     best_rank_match_name = best_rank_match_list[0]
 
     # Return the identiy of the card and the quality of the suit and rank match
+    if best_rank_match_name == "Unknown" and best_suit_match_name == "Unknown":
+        return qCard.best_rank_match, qCard.best_suit_match, best_rank_match_diff, best_suit_match_diff
+
+    elif best_rank_match_name == "Unknown":
+        return qCard.best_rank_match, best_suit_match_name, best_rank_match_diff, best_suit_match_diff
+
+    elif best_suit_match_name == "Unknown":
+        return best_rank_match_name, qCard.best_suit_match, best_rank_match_diff, best_suit_match_diff
+
     return best_rank_match_name, best_suit_match_name, best_rank_match_diff, best_suit_match_diff
 
 
@@ -446,11 +459,11 @@ def CalculateCardPosition(crns, image, oldlines):
             return w, h, topcorner1, topcorner2, cornerlist[0], cornerlist[1]
         cornerlist[0] = intersections[0]
         cornerlist[1] = intersections[1]
-        topcorner1 = intersections[2]
-        topcorner2 = intersections[3]
+        # topcorner1 = intersections[2]
+        # topcorner2 = intersections[3]
         runs = True
 
-def houghLinesCorners(image,b1,b2,t1,t2, oldlines):
+def houghLinesCorners(image,b1,b2,t1,t2, oldintersections):
     """---------------------Hough Lines---------------------------"""
 
     # Finds Maximum and minimum x and y af the points supplied to find where to crop the image
@@ -494,7 +507,12 @@ def houghLinesCorners(image,b1,b2,t1,t2, oldlines):
     if len(lel) == 0: # if "løl" is empty, due to bad cropping or bad points fed to the function,
         print("bad search") # return non and print bad search
         return None
-    lel = cv2.resize(lel, (0, 0), fx=magfactor, fy=magfactor) # magnify løl by the magfactor for better line/ edge detection
+
+    # Hvis kortet ligger helt ude til siden prøver den at tage et billede udenfor billedet, og den exception skal fanges
+    try:
+        lel = cv2.resize(lel, (0, 0), fx=magfactor, fy=magfactor) # magnify løl by the magfactor for better line/ edge detection
+    except cv2.error:
+        return None
 
     edges = cv2.Canny(lel, 150, 265, apertureSize=3) # find edges
 
@@ -506,6 +524,19 @@ def houghLinesCorners(image,b1,b2,t1,t2, oldlines):
     # print(lines)
     vlines = []
     hlines = []
+
+    # Returnerer vi ikke bare de gamle her?
+    if len(oldintersections[0]) != 0 and lines is None:
+        if distance.euclidean(oldintersections[0], b1) > distance.euclidean(oldintersections[1], b1):
+            if distance.euclidean(oldintersections[1],b1) > 200:
+                return [b1,b2]
+            else:
+                return oldintersections
+        else:
+            if distance.euclidean(oldintersections[1],b1) > 200:
+                return [b1,b2]
+            else:
+                return oldintersections
 
 
     if lines is not None:
@@ -682,6 +713,13 @@ def houghLinesCorners(image,b1,b2,t1,t2, oldlines):
             print("Have found lines")
             cv2.imshow("Lel", lel)
             cv2.imshow("Lines", edges)
+
+            if len(oldintersections[0]) != 0:
+                if distance.euclidean(oldintersections[0], b1) < distance.euclidean(intersections[0], b1):
+                    return oldintersections
+                else:
+                    return intersections
+
             return intersections
 
     print("have not found lines")

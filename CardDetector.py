@@ -21,7 +21,7 @@ import sched, time
 
 ## Camera settings
 
-def writeCardJson(i: int):
+def writeCardJson(cards, i: int):
     if cards[i] is None:
         return None
     else:
@@ -32,16 +32,16 @@ def writeCardJson(i: int):
 
 ## Camera settings
 
-def writeJson():
+def writeJson(cards):
     cardsJson = {
-        "waste": writeCardJson(0),
-        "tableau1": writeCardJson(1),
-        "tableau2": writeCardJson(2),
-        "tableau3": writeCardJson(3),
-        "tableau4": writeCardJson(4),
-        "tableau5": writeCardJson(5),
-        "tableau6": writeCardJson(6),
-        "tableau7": writeCardJson(7),
+        "waste": writeCardJson(cards, 7),
+        "tableau1": writeCardJson(cards, 0),
+        "tableau2": writeCardJson(cards, 1),
+        "tableau3": writeCardJson(cards, 2),
+        "tableau4": writeCardJson(cards, 3),
+        "tableau5": writeCardJson(cards, 4),
+        "tableau6": writeCardJson(cards, 5),
+        "tableau7": writeCardJson(cards, 6),
     }
     return json.dumps(cardsJson)
 
@@ -94,9 +94,10 @@ RED_COLOR = (0, 0, 255)
 frame_rate_calc = 1
 freq = cv2.getTickFrequency()
 framecounter = 0
-
+qCard = Cards.Query_card()
+cards = [qCard] * 8
 cam_quit = 0  # Loop control variable
-linelist = [[], [], [], [], [], [] , [], []]
+oldintersections = [[[], []], [[], []], [[], []], [[], []], [[], []], [[], []], [[], []], [[], []]]
 
 while cam_quit == 0:
     framecounter += 1
@@ -130,28 +131,29 @@ while cam_quit == 0:
 
     subimagelist = extractimages.getimages(frame)
 
-    cards = []
     k = 0
     width, height, channel = frame.shape
     for i in range(len(subimagelist)):
         # Find contour for kort stakken i billedet.
         # subimage = getattr(image, 'img')
-        cv2.imshow('hej', subimagelist[i])
+        # cv2.imshow('hej', subimagelist[i])
         pre_proc = Cards.preprocces_image(subimagelist[i])
         cnts_sort, cnt_is_card, crns = Cards.find_cards(pre_proc)
 
         if len(crns) != 0:
 
-            w, h, top1, top2, bot1, bot2 = Cards.CalculateCardPosition(crns, subimagelist[i], linelist[i])
+            w, h, top1, top2, bot1, bot2 = Cards.CalculateCardPosition(crns, subimagelist[i], oldintersections[i])
+            oldintersections[i][0] = bot1
+            oldintersections[i][1] = bot2
             crns = [bot1, bot2, top1, top2]
             # cv2.circle(frame, (int(top1[0]), int(top1[1])), 6, (0, 255, 255), -1)
             # cv2.circle(frame, (int(top2[0]), int(top2[1])), 6, (0, 255, 255), -1)
             # cv2.circle(frame, (int(bot1[0]), int(bot1[1])), 6, (0, 0, 255), -1)
             # cv2.circle(frame, (int(bot2[0]), int(bot2[1])), 6, (0, 0, 255), -1)
-            card = Cards.preprocess_card(subimagelist[i], crns, w, h)
-            cards.append(card)
-            card.best_rank_match, card.best_suit_match, card.rank_diff, \
-            card.suit_diff = Cards.match_card(card, train_ranks, train_suits)
+            cards[k] = Cards.preprocess_card(subimagelist[i], crns, w, h, cards[k])
+
+            cards[k].best_rank_match, cards[k].best_suit_match, cards[k].rank_diff, \
+            cards[k].suit_diff = Cards.match_card(cards[k], train_ranks, train_suits)
 
             # Draw center point and match result on the image.
             # Vi bliver nødt til at shifte vores koordinater. De koordinater der kommer ud af vores cropped billeder
@@ -159,22 +161,18 @@ while cam_quit == 0:
             # billede.
 
             # Det her er for vores pilecard der bliver vendt
-
-            # Det her er for vores pilecard der bliver vendt
-            # Det her er for vores pilecard der bliver vendt
             if k != len(subimagelist) - 1:
-                card.center[0] = card.center[0] + k * int(height / 7)
-                card.center[1] = card.center[1] + int(width / 4)
+                cards[k].center[0] = cards[k].center[0] + k * int(height / 7)
+                cards[k].center[1] = cards[k].center[1] + int(width / 4)
                 # Det her er for resten af kortene.
             else:
-                card.center[0] = card.center[0] + 1 * int(height / 7)
+                cards[k].center[0] = cards[k].center[0] + 1 * int(height / 7)
 
-            frame = Cards.draw_results(frame, card)
-        else:
+            frame = Cards.draw_results(frame, cards[k])
             # Vi tilføjer lige et tomt kort hvis vores subbillede ikke indeholder et kort, det bruges når information
             # Sendes til java processen senere.
-            card = None
-            cards.append(card)
+            # card = None
+            # cards[k] = card
         # Counter til at holde styr på hvilket kort vi er på.
         k = k + 1
 
@@ -221,36 +219,14 @@ while cam_quit == 0:
         framecounter = 0
         # print('Updated json')
         with open('kabalen2.json', 'w') as f:
-            f.write(writeJson())
+            f.write(writeJson(cards))
     # This saves the cards names in a file and also cutting it down to its initials.
     i = 1
-    if key == ord("p"):
-        savedCards = []
-        for detectedCards in cards:
-            if i <= 8:
-                if detectedCards is None:
-                    savedCards.append(detectedCards)
-                else:
-                    rankCard = Cards.rank_converter(detectedCards.best_rank_match.upper())
-                    suitCard = detectedCards.best_suit_match
 
-                    print(f"Byggestabel: {i} " + rankCard + suitCard[0].lower())
-                    theCard = rankCard.upper() + suitCard[0].lower()
-                    savedCards.append(theCard)
-
-                with open('kabalen.txt', 'w') as f:
-                    for myCard in savedCards:
-                        if myCard is None:
-                            f.write("NA\n")
-                        else:
-                            f.write("%s\n" % myCard)
-                i += 1
-
-
-
-    if key == ord("l"):
+    if key == ord("d"):
         with open('kabalen2.json', 'w') as f:
-            f.write(writeJson())
+            qCard = Cards.Query_card()
+            cards = [qCard] * 8
 
 
 
