@@ -94,8 +94,15 @@ RED_COLOR = (0, 0, 255)
 frame_rate_calc = 1
 freq = cv2.getTickFrequency()
 framecounter = 0
-qCard = Cards.Query_card()
-cards = [qCard] * 8
+qCard1 = Cards.Query_card()
+qCard2 = Cards.Query_card()
+qCard3 = Cards.Query_card()
+qCard4 = Cards.Query_card()
+qCard5 = Cards.Query_card()
+qCard6 = Cards.Query_card()
+qCard7 = Cards.Query_card()
+qCard8 = Cards.Query_card()
+cards = [qCard1, qCard2, qCard3, qCard4, qCard5, qCard6, qCard7, qCard8]
 cam_quit = 0  # Loop control variable
 oldintersections = [[[], []], [[], []], [[], []], [[], []], [[], []], [[], []], [[], []], [[], []]]
 
@@ -196,7 +203,7 @@ while cam_quit == 0:
             cv2.line(frame, (i * int(height / 7), int(width / 4)), (int(width / 4), frame.size), RED_COLOR, 5)
 
     # Resize the frame.
-    scale_percent = 60  # percent of original size
+    scale_percent = 40  # percent of original size
     width = int(frame.shape[1] * scale_percent / 100)
     height = int(frame.shape[0] * scale_percent / 100)
     dim = (width, height)
@@ -218,15 +225,29 @@ while cam_quit == 0:
     if framecounter >= int(frame_rate_calc):
         framecounter = 0
         # print('Updated json')
-        with open('kabalen2.json', 'w') as f:
-            f.write(writeJson(cards))
-    # This saves the cards names in a file and also cutting it down to its initials.
-    i = 1
 
-    if key == ord("d"):
-        with open('kabalen2.json', 'w') as f:
-            qCard = Cards.Query_card()
-            cards = [qCard] * 8
+        with open('kabalen2.json', 'w') as d:
+            data = writeJson(cards)
+            d.write(data)
+
+        with open('message.txt', 'r+') as f:
+            if f.readline() == "clear":
+                    f.truncate(0)
+                    qCard1 = Cards.Query_card()
+                    qCard2 = Cards.Query_card()
+                    qCard3 = Cards.Query_card()
+                    qCard4 = Cards.Query_card()
+                    qCard5 = Cards.Query_card()
+                    qCard6 = Cards.Query_card()
+                    qCard7 = Cards.Query_card()
+                    qCard8 = Cards.Query_card()
+                    cards = [qCard1, qCard2, qCard3, qCard4, qCard5, qCard6, qCard7, qCard8]
+                    print("yea!")
+
+
+    # This saves the cards names in a file and also cutting it down to its initials.
+
+
 
 
 
