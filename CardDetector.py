@@ -31,18 +31,45 @@ def writeCardJson(i: int):
             "rank": Cards.rank_converter(cards[i].best_rank_match.upper())
         }
 
+def writeCardJson2(i: int):
+    with open('kabalen2.json') as f:
+        data = json.load(f)
+
+    if i < 7:
+        card1 = data['tableau' + str(i)]
+    else:
+        card1 = data['waste']
+
+    newCard = cards[i]
+    newSuit = cards[i].best_suit_match[0]
+    newRank = Cards.rank_converter(cards[i].best_rank_match.upper())
+
+    if newCard is None:
+        return None
+
+    if card1 is None:
+        return {
+            "suit": newSuit,
+            "rank": newRank
+        }
+    else:
+        return {
+            "suit": newSuit if newSuit != "Unknown" else card1["suit"],
+            "rank": newRank if newRank != "Unknown" else card1["rank"]
+        }
+
 ## Camera settings
 
 def writeJson():
     cardsJson = {
-        "waste": writeCardJson(0),
-        "tableau1": writeCardJson(1),
-        "tableau2": writeCardJson(2),
-        "tableau3": writeCardJson(3),
-        "tableau4": writeCardJson(4),
-        "tableau5": writeCardJson(5),
-        "tableau6": writeCardJson(6),
-        "tableau7": writeCardJson(7),
+        "waste": writeCardJson2(0),
+        "tableau1": writeCardJson2(1),
+        "tableau2": writeCardJson2(2),
+        "tableau3": writeCardJson2(3),
+        "tableau4": writeCardJson2(4),
+        "tableau5": writeCardJson2(5),
+        "tableau6": writeCardJson2(6),
+        "tableau7": writeCardJson2(7),
     }
     return json.dumps(cardsJson)
 
