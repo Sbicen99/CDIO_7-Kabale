@@ -263,6 +263,7 @@ while cam_quit == 0:
                 f.truncate(0)
                 qCard = Cards.Query_card()
                 cards = [qCard] * 8
+                print("yea!")
 
 
 
