@@ -505,7 +505,7 @@ def houghLinesCorners(image,b1,b2,t1,t2, oldintersections):
     # cv2.imshow("what i crop", image)
     lel = image[cropY1:cropY2, cropX1:cropX2] # The function works on a cropped and magnified image "løl"
     if len(lel) == 0: # if "løl" is empty, due to bad cropping or bad points fed to the function,
-        print("bad search") # return non and print bad search
+        # print("bad search") # return non and print bad search
         return None
 
     # Hvis kortet ligger helt ude til siden prøver den at tage et billede udenfor billedet, og den exception skal fanges
@@ -710,9 +710,9 @@ def houghLinesCorners(image,b1,b2,t1,t2, oldintersections):
             #cv2.circle(image, (int(intersections[0][0]), int(intersections[0][1])), 6, (0, 255, 255), -1)
             #cv2.circle(image, (int(intersections[1][0]), int(intersections[1][1])), 6, (0, 255, 255), -1)
 
-            print("Have found lines")
-            cv2.imshow("Lel", lel)
-            cv2.imshow("Lines", edges)
+            # print("Have found lines")
+            # cv2.imshow("Lel", lel)
+            # cv2.imshow("Lines", edges)
 
             if len(oldintersections[0]) != 0:
                 if distance.euclidean(oldintersections[0], b1) < distance.euclidean(intersections[0], b1):
@@ -722,9 +722,9 @@ def houghLinesCorners(image,b1,b2,t1,t2, oldintersections):
 
             return intersections
 
-    print("have not found lines")
-    cv2.imshow("Lel", lel)
-    cv2.imshow("Lines", edges)
+    #print("have not found lines")
+    #cv2.imshow("Lel", lel)
+    #cv2.imshow("Lines", edges)
     return None
 
     """
