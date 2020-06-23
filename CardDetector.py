@@ -112,9 +112,9 @@ while cam_quit == 0:
     ###### image = videostream.read()
     ###### image = cv2.imread(path + '/training_imgs/temp-test.jpg')
     ret, frame = cap.read()
-    frame = cv2.flip(frame, 1)
+    #frame = cv2.flip(frame, 1)
     frame = cv2.flip(frame, -1)
-    frame = cv2.flip(frame, 0)
+    #frame = cv2.flip(frame, 0)
     ##frame = cv2.imread(path + '/training_imgs/test_kabale.jpg')
     # Her bruges kamera perspektivet, den her linje og ned til frame = dst[y:y + h, x:x + w] skal udkommenteres
     # Hvis du ikke bruger din egen kamera kallibration.
@@ -144,7 +144,7 @@ while cam_quit == 0:
         # Find contour for kort stakken i billedet.
         # subimage = getattr(image, 'img')
         # cv2.imshow('hej', subimagelist[i])
-        pre_proc = Cards.preprocces_image(subimagelist[i])
+        pre_proc = Cards.preprocces_image(subimagelist[i], i)
         cnts_sort, cnt_is_card, crns = Cards.find_cards(pre_proc)
 
         if len(crns) != 0:
@@ -203,7 +203,7 @@ while cam_quit == 0:
             cv2.line(frame, (i * int(height / 7), int(width / 4)), (int(width / 4), frame.size), RED_COLOR, 5)
 
     # Resize the frame.
-    scale_percent = 40  # percent of original size
+    scale_percent = 60  # percent of original size
     width = int(frame.shape[1] * scale_percent / 100)
     height = int(frame.shape[0] * scale_percent / 100)
     dim = (width, height)

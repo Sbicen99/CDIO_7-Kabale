@@ -41,14 +41,12 @@ CARD_MIN_AREA = 25000
 font = cv2.FONT_HERSHEY_SIMPLEX
 
 
-def preprocces_image(image):
+def preprocces_image(image, i):
     # cv2.imshow('Card class recieved image', image)
 
     blur = cv2.GaussianBlur(image, (9, 9), 0)
 
     edges = cv2.Canny(blur, 50, 150, True)
-
-    cv2.imshow('edges', edges)
 
     kernel = np.ones((3, 3), np.uint8)
     dilate = cv2.dilate(edges, kernel, iterations=1)
@@ -215,13 +213,13 @@ def preprocess_card(image, pts, w, h, qCard):
     # Retval bruges ikke - OTSU giver den rigtige thresh baseret på hvilke farver der eksisterer.
     (thresh, im_bw) = cv2.threshold(gray_Qcorner, 128, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)
 
-
+    # cv2.imshow('im', im_bw)
     # Split in to top and bottom half (top shows rank, bottom shows suit)
     Qrank = im_bw[20:190, 0:135]
     Qsuit = im_bw[170:336, 0:135]
 
-    # cv2.imshow('Qrank thresh', Qrank)
-    # cv2.imshow('Qsuit thresh', Qsuit)
+    cv2.imshow('Qrank thresh', Qrank)
+    cv2.imshow('Qsuit thresh', Qsuit)
 
     # Find rank contour and bounding rectangle, isolate and find largest contour
     Qrank_cnts, hier = cv2.findContours(Qrank, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -459,8 +457,8 @@ def CalculateCardPosition(crns, image, oldlines):
             return w, h, topcorner1, topcorner2, cornerlist[0], cornerlist[1]
         cornerlist[0] = intersections[0]
         cornerlist[1] = intersections[1]
-        # topcorner1 = intersections[2]
-        # topcorner2 = intersections[3]
+        #topcorner1 = intersections[2]
+        #topcorner2 = intersections[3]
         runs = True
 
 def houghLinesCorners(image,b1,b2,t1,t2, oldintersections):
@@ -514,7 +512,7 @@ def houghLinesCorners(image,b1,b2,t1,t2, oldintersections):
     except cv2.error:
         return None
 
-    edges = cv2.Canny(lel, 150, 265, apertureSize=3) # find edges
+    edges = cv2.Canny(lel, 150, 400, apertureSize=3) # find edges
 
     ##cv2.circle(image, (cropX1, cropY1), 6, (255, 0, 255), -1)
     ##cv2.circle(image, (cropX2, cropY2), 6, (255, 0, 255), -1)
@@ -724,7 +722,7 @@ def houghLinesCorners(image,b1,b2,t1,t2, oldintersections):
 
     #print("have not found lines")
     #cv2.imshow("Lel", lel)
-    #cv2.imshow("Lines", edges)
+    cv2.imshow("Lines", edges)
     return None
 
     """
