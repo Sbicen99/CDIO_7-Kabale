@@ -203,7 +203,7 @@ while cam_quit == 0:
             cv2.line(frame, (i * int(height / 7), int(width / 4)), (int(width / 4), frame.size), RED_COLOR, 5)
 
     # Resize the frame.
-    scale_percent = 60  # percent of original size
+    scale_percent = 80  # percent of original size
     width = int(frame.shape[1] * scale_percent / 100)
     height = int(frame.shape[0] * scale_percent / 100)
     dim = (width, height)
