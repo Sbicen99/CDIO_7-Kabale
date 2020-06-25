@@ -1,10 +1,10 @@
 import json
+from flask import Flask, jsonify
 
 import CardDetector
 
-from flask import Flask, jsonify
-
 app = Flask(__name__)
+
 
 @app.route('/')
 def hello1():
@@ -18,6 +18,7 @@ def hello2():
             return file.read()
     except:
         return '... Løbet tør for data, hvor trist!'
+
 
 @app.route('/data2')
 def test():

@@ -1,4 +1,3 @@
-
 import cv2
 import time
 
@@ -15,7 +14,7 @@ def getimages(im):
     # Height er cirka 1900px - Gustav
     # Navngivet fra venstre mod højre
 
-    building_pile1= im[int(width/4):int(width), 0:int((height/7) * 1)]
+    building_pile1 = im[int(width / 4):int(width), 0:int((height / 7) * 1)]
     building_pile2 = im[int(width / 4):int(width), int(height / 7) * 1:int((height / 7) * 2)]
     building_pile3 = im[int(width / 4):int(width), int(height / 7) * 2:int((height / 7) * 3)]
     building_pile4 = im[int(width / 4):int(width), int(height / 7) * 3:int((height / 7) * 4)]
@@ -24,7 +23,7 @@ def getimages(im):
     building_pile7 = im[int(width / 4):int(width), int(height / 7) * 6:int((height / 7) * 7)]
 
     # Det her kort er det nye kort der bliver vendt fra bunken.
-    pilecard = im[0:int(width/4), int(height/7) * 1:int((height/7) * 2)]
+    pilecard = im[0:int(width / 4), int(height / 7) * 1:int((height / 7) * 2)]
 
     subimagelist = []
 
@@ -36,7 +35,6 @@ def getimages(im):
     subimagelist.append(building_pile6)
     subimagelist.append(building_pile7)
     subimagelist.append(pilecard)
-
 
     # Lad være med at ændre på hvor de forskellige ting bliver returneret plox - Gustav
 

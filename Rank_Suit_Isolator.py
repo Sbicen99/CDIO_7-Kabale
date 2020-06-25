@@ -2,12 +2,11 @@
 ### of it. Isolates the suit and rank and saves the isolated images.
 ### Runs through A - K ranks and then the 4 suits.
 
-import os
-
 # Import necessary packages
 import camera as camera
 import cv2
 import numpy as np
+import os
 
 import Cards
 

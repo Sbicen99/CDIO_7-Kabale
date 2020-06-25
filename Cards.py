@@ -7,9 +7,9 @@
 
 
 import cv2
+import math
 # Import necessary packages
 import numpy as np
-import math
 import os
 from scipy.spatial import distance
 
@@ -57,9 +57,10 @@ def preprocces_image(image, i):
 # Structures to hold query card and train card information #
 
 def distances(xy1, xy2):
-    d0 = np.subtract.outer(xy1[:,0], xy2[:,0])
-    d1 = np.subtract.outer(xy1[:,1], xy2[:,1])
+    d0 = np.subtract.outer(xy1[:, 0], xy2[:, 0])
+    d1 = np.subtract.outer(xy1[:, 1], xy2[:, 1])
     return np.hypot(d0, d1)
+
 
 class Query_card:
     """Structure to store information about query cards in the camera image."""
@@ -130,6 +131,7 @@ def load_suits(filepath):
 
     return train_suits
 
+
 def find_cards(thresh_image):
     """Finds all card-sized contours in a thresholded camera image.
     Returns the number of cards, and a list of card contours sorted
@@ -165,7 +167,7 @@ def find_cards(thresh_image):
     for i in range(len(cnts_sort)):
         size = cv2.contourArea(cnts_sort[i])
         peri = cv2.arcLength(cnts_sort[i], True)
-        #approx = cv2.approxPolyDP(cnts_sort[i], 0.01 * peri, True)
+        # approx = cv2.approxPolyDP(cnts_sort[i], 0.01 * peri, True)
         rect = cv2.minAreaRect(cnts_sort[i])
         box = cv2.boxPoints(rect)
 
@@ -200,7 +202,7 @@ def preprocess_card(image, pts, w, h, qCard):
     cv2.imshow("200x300 card", qCard.warp)
 
     # Tager fat i nederste højre hjørner og zoomer x4
-    Qcorner = qCard.warp[300-CORNER_HEIGHT:295, 200-CORNER_WIDTH:190]
+    Qcorner = qCard.warp[300 - CORNER_HEIGHT:295, 200 - CORNER_WIDTH:190]
     Qcorner_zoom = cv2.resize(Qcorner, (0, 0), fx=4, fy=4)
 
     # Flipper det så det vender ordenligt
@@ -417,7 +419,6 @@ def flattener(image, pts):
 
 
 def CalculateCardPosition(crns, image, oldlines):
-
     runs = False
     cornerlist = np.array([[0, 0], [0, 0]])
     # Finder de to højeste y værdier i vores array. De højeste y-værdier er de nederste punkter.
@@ -438,7 +439,7 @@ def CalculateCardPosition(crns, image, oldlines):
             vector = cornerlist[0] - cornerlist[1]
 
         # Den ortogonale vektor bruges til at udrenge approximationen for de to top punkter.
-        orthogonal_vector = [-1*WIDTH_TO_HEIGHT_RATIO*vector[1], WIDTH_TO_HEIGHT_RATIO*vector[0]]
+        orthogonal_vector = [-1 * WIDTH_TO_HEIGHT_RATIO * vector[1], WIDTH_TO_HEIGHT_RATIO * vector[0]]
         # width
         w = math.sqrt(math.pow(vector[0], 2) + math.pow(vector[1], 2))
         # height
@@ -447,7 +448,7 @@ def CalculateCardPosition(crns, image, oldlines):
         topcorner1 = cornerlist[0] + orthogonal_vector
         topcorner2 = cornerlist[1] + orthogonal_vector
 
-        intersections = houghLinesCorners(image, cornerlist[0],cornerlist[1], topcorner1,topcorner2, oldlines)
+        intersections = houghLinesCorners(image, cornerlist[0], cornerlist[1], topcorner1, topcorner2, oldlines)
         if intersections == None or runs == True:
             if runs is True:
                 cv2.putText(image, ("Locked!"), (500, 50), font, 1, (0, 255, 0), 3, cv2.LINE_AA)
@@ -457,11 +458,12 @@ def CalculateCardPosition(crns, image, oldlines):
             return w, h, topcorner1, topcorner2, cornerlist[0], cornerlist[1]
         cornerlist[0] = intersections[0]
         cornerlist[1] = intersections[1]
-        #topcorner1 = intersections[2]
-        #topcorner2 = intersections[3]
+        # topcorner1 = intersections[2]
+        # topcorner2 = intersections[3]
         runs = True
 
-def houghLinesCorners(image,b1,b2,t1,t2, oldintersections):
+
+def houghLinesCorners(image, b1, b2, t1, t2, oldintersections):
     """---------------------Hough Lines---------------------------"""
 
     # Finds Maximum and minimum x and y af the points supplied to find where to crop the image
@@ -469,8 +471,8 @@ def houghLinesCorners(image,b1,b2,t1,t2, oldintersections):
     xmax = None
     ymin = None
     ymax = None
-    for p in [b1,b2,t1,t2]:
-        if xmin is None: # Initialise the variables
+    for p in [b1, b2, t1, t2]:
+        if xmin is None:  # Initialise the variables
             xmin = p[0]
         if xmax is None:
             xmax = p[0]
@@ -479,7 +481,7 @@ def houghLinesCorners(image,b1,b2,t1,t2, oldintersections):
         if ymax is None:
             ymax = p[1]
 
-        if p[0] < xmin: # Find min and max
+        if p[0] < xmin:  # Find min and max
             xmin = p[0]
         elif p[0] > xmax:
             xmax = p[0]
@@ -488,36 +490,38 @@ def houghLinesCorners(image,b1,b2,t1,t2, oldintersections):
         elif p[1] > ymax:
             ymax = p[1]
 
-    offsetX1 = -8 # An adjustable offset to fine tune the cropping
+    offsetX1 = -8  # An adjustable offset to fine tune the cropping
     offsetX2 = 8
     offsetY1 = 40
     offsetY2 = 20
 
-    cropX1 = int(np.heaviside(0,xmin + offsetX1)) # Uses the heavyside/unit step function to make sure that the cropping points
-    cropX2 = int(np.heaviside(0,xmax + offsetX2)) # are inside the picture i.e. if they are < 0 make them 0
-    cropY1 = int(np.heaviside(0,ymin + offsetY1))
-    cropY2 = int(np.heaviside(0,ymax + offsetY2))
+    cropX1 = int(
+        np.heaviside(0, xmin + offsetX1))  # Uses the heavyside/unit step function to make sure that the cropping points
+    cropX2 = int(np.heaviside(0, xmax + offsetX2))  # are inside the picture i.e. if they are < 0 make them 0
+    cropY1 = int(np.heaviside(0, ymin + offsetY1))
+    cropY2 = int(np.heaviside(0, ymax + offsetY2))
 
-    magfactor = 2 # factor for magnifying the image that is being worked on, called løl "name subject to change"
+    magfactor = 2  # factor for magnifying the image that is being worked on, called løl "name subject to change"
 
     # cv2.imshow("what i crop", image)
-    lel = image[cropY1:cropY2, cropX1:cropX2] # The function works on a cropped and magnified image "løl"
-    if len(lel) == 0: # if "løl" is empty, due to bad cropping or bad points fed to the function,
+    lel = image[cropY1:cropY2, cropX1:cropX2]  # The function works on a cropped and magnified image "løl"
+    if len(lel) == 0:  # if "løl" is empty, due to bad cropping or bad points fed to the function,
         # print("bad search") # return non and print bad search
         return None
 
     # Hvis kortet ligger helt ude til siden prøver den at tage et billede udenfor billedet, og den exception skal fanges
     try:
-        lel = cv2.resize(lel, (0, 0), fx=magfactor, fy=magfactor) # magnify løl by the magfactor for better line/ edge detection
+        lel = cv2.resize(lel, (0, 0), fx=magfactor,
+                         fy=magfactor)  # magnify løl by the magfactor for better line/ edge detection
     except cv2.error:
         return None
 
-    edges = cv2.Canny(lel, 150, 400, apertureSize=3) # find edges
+    edges = cv2.Canny(lel, 150, 400, apertureSize=3)  # find edges
 
     ##cv2.circle(image, (cropX1, cropY1), 6, (255, 0, 255), -1)
     ##cv2.circle(image, (cropX2, cropY2), 6, (255, 0, 255), -1)
 
-    lines = cv2.HoughLines(edges, 1, np.pi / 180, 125) #
+    lines = cv2.HoughLines(edges, 1, np.pi / 180, 125)  #
     # lines = [[[-184, 3.0717795]]]
     # print(lines)
     vlines = []
@@ -526,19 +530,18 @@ def houghLinesCorners(image,b1,b2,t1,t2, oldintersections):
     # Returnerer vi ikke bare de gamle her?
     if len(oldintersections[0]) != 0 and lines is None:
         if distance.euclidean(oldintersections[0], b1) > distance.euclidean(oldintersections[1], b1):
-            if distance.euclidean(oldintersections[1],b1) > 200:
-                return [b1,b2]
+            if distance.euclidean(oldintersections[1], b1) > 200:
+                return [b1, b2]
             else:
                 return oldintersections
         else:
-            if distance.euclidean(oldintersections[1],b1) > 200:
-                return [b1,b2]
+            if distance.euclidean(oldintersections[1], b1) > 200:
+                return [b1, b2]
             else:
                 return oldintersections
 
-
     if lines is not None:
-        #print("found lines")
+        # print("found lines")
         for i in lines:
             rho = i[0][0]
             theta = i[0][1]
@@ -565,10 +568,10 @@ def houghLinesCorners(image,b1,b2,t1,t2, oldintersections):
             cv2.line(edges, (x1, y1), (x2, y2), (188, 0, 188), 1)
             """
 
-        #print("vlines")
-        #print(vlines)
-        #print("hlines")
-        #print(hlines)
+        # print("vlines")
+        # print(vlines)
+        # print("hlines")
+        # print(hlines)
 
         while len(vlines) > 2:
             mTheta = 0  # mean angle of the horizontal lines in radians
@@ -668,16 +671,17 @@ def houghLinesCorners(image,b1,b2,t1,t2, oldintersections):
             sideRelationFactor = 1.5
 
             # Pythagoras theorem to find distance between intersections
-            intrsctwidth = np.sqrt(((intersections[1][0] - intersections[0][0]) ** 2) + ((intersections[1][1] - intersections[0][1]) ** 2))
+            intrsctwidth = np.sqrt(
+                ((intersections[1][0] - intersections[0][0]) ** 2) + ((intersections[1][1] - intersections[0][1]) ** 2))
 
             # calculates the angle between the x-axis and the line for each side of the card
             if lline[0][0] >= 0:
-                lsideangle = (lline[0][1] + 3*np.pi/2) % (2*np.pi)
+                lsideangle = (lline[0][1] + 3 * np.pi / 2) % (2 * np.pi)
             else:
                 lsideangle = (lline[0][1] + np.pi / 2) % (2 * np.pi)
 
             if rline[0][0] >= 0:
-                rsideangle = (rline[0][1] + 3*np.pi/2) % (2*np.pi)
+                rsideangle = (rline[0][1] + 3 * np.pi / 2) % (2 * np.pi)
             else:
                 rsideangle = (rline[0][1] + np.pi / 2) % (2 * np.pi)
 
@@ -695,8 +699,8 @@ def houghLinesCorners(image,b1,b2,t1,t2, oldintersections):
             cv2.circle(lel, (int(restimate[0]), int(restimate[1])), 6, (0, 255, 255), -1)
             cv2.circle(lel, (int(lestimate[0]), int(lestimate[1])), 6, (0, 255, 255), -1)
 
-            #cv2.circle(løl, (int(intersections[0][0]), int(intersections[0][1])), 6, (0, 255, 255), -1)
-            #cv2.circle(løl, (int(intersections[1][0]), int(intersections[1][1])), 6, (0, 255, 255), -1)
+            # cv2.circle(løl, (int(intersections[0][0]), int(intersections[0][1])), 6, (0, 255, 255), -1)
+            # cv2.circle(løl, (int(intersections[1][0]), int(intersections[1][1])), 6, (0, 255, 255), -1)
 
             for p in intersections:
                 p[0] = p[0] / magfactor
@@ -705,8 +709,8 @@ def houghLinesCorners(image,b1,b2,t1,t2, oldintersections):
                 p[0] += cropX1
                 p[1] += cropY1
 
-            #cv2.circle(image, (int(intersections[0][0]), int(intersections[0][1])), 6, (0, 255, 255), -1)
-            #cv2.circle(image, (int(intersections[1][0]), int(intersections[1][1])), 6, (0, 255, 255), -1)
+            # cv2.circle(image, (int(intersections[0][0]), int(intersections[0][1])), 6, (0, 255, 255), -1)
+            # cv2.circle(image, (int(intersections[1][0]), int(intersections[1][1])), 6, (0, 255, 255), -1)
 
             # print("Have found lines")
             # cv2.imshow("Lel", lel)
@@ -720,8 +724,8 @@ def houghLinesCorners(image,b1,b2,t1,t2, oldintersections):
 
             return intersections
 
-    #print("have not found lines")
-    #cv2.imshow("Lel", lel)
+    # print("have not found lines")
+    # cv2.imshow("Lel", lel)
     cv2.imshow("Lines", edges)
     return None
 
@@ -739,6 +743,8 @@ def houghLinesCorners(image,b1,b2,t1,t2, oldintersections):
             x2 = int(x0 - 1000 * (-b))
             y2 = int(y0 - 1000 * (a))
     """
+
+
 def rank_converter(rank):
     switcher = {
         "ACE": "1",
@@ -757,4 +763,3 @@ def rank_converter(rank):
         "UNKNOWN": "U"
     }
     return switcher.get(rank, " ")
-

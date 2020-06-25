@@ -6,18 +6,20 @@
 # from a PiCamera video feed.
 #
 
-import os
-import time
-import json
-
 # Import necessary packages
 import cv2
+import json
 import numpy as np
-import time
 import os
+import os
+import sched
+import time
+import time
+import time
+
 import Cards
 import extractimages
-import sched, time
+
 
 ## Camera settings
 
@@ -29,6 +31,7 @@ def writeCardJson(cards, i: int):
             "suit": cards[i].best_suit_match[0],
             "rank": Cards.rank_converter(cards[i].best_rank_match.upper())
         }
+
 
 ## Camera settings
 
@@ -44,6 +47,7 @@ def writeJson(cards):
         "tableau7": writeCardJson(cards, 6),
     }
     return json.dumps(cardsJson)
+
 
 ## Define font to use
 font = cv2.FONT_HERSHEY_SIMPLEX
@@ -66,8 +70,6 @@ cam_quit = 0  # Loop control variable
 # Henter kamera kallibrerings variable.
 mtx = np.load('Callibration_files/mtx_gustav.npy')
 dist = np.load('Callibration_files/dist_gustav.npy')
-
-
 
 input_from_user = input("If you want to use computer webcam press 1, "
                         "for IP Cam Server press ENTER ")
@@ -112,9 +114,9 @@ while cam_quit == 0:
     ###### image = videostream.read()
     ###### image = cv2.imread(path + '/training_imgs/temp-test.jpg')
     ret, frame = cap.read()
-    #frame = cv2.flip(frame, 1)
+    # frame = cv2.flip(frame, 1)
     frame = cv2.flip(frame, -1)
-    #frame = cv2.flip(frame, 0)
+    # frame = cv2.flip(frame, 0)
     ##frame = cv2.imread(path + '/training_imgs/test_kabale.jpg')
     # Her bruges kamera perspektivet, den her linje og ned til frame = dst[y:y + h, x:x + w] skal udkommenteres
     # Hvis du ikke bruger din egen kamera kallibration.
@@ -232,22 +234,16 @@ while cam_quit == 0:
 
         with open('message.txt', 'r+') as f:
             if f.readline() == "clear":
-                    f.truncate(0)
-                    qCard1 = Cards.Query_card()
-                    qCard2 = Cards.Query_card()
-                    qCard3 = Cards.Query_card()
-                    qCard4 = Cards.Query_card()
-                    qCard5 = Cards.Query_card()
-                    qCard6 = Cards.Query_card()
-                    qCard7 = Cards.Query_card()
-                    qCard8 = Cards.Query_card()
-                    cards = [qCard1, qCard2, qCard3, qCard4, qCard5, qCard6, qCard7, qCard8]
-                    print("yea!")
-
+                f.truncate(0)
+                qCard1 = Cards.Query_card()
+                qCard2 = Cards.Query_card()
+                qCard3 = Cards.Query_card()
+                qCard4 = Cards.Query_card()
+                qCard5 = Cards.Query_card()
+                qCard6 = Cards.Query_card()
+                qCard7 = Cards.Query_card()
+                qCard8 = Cards.Query_card()
+                cards = [qCard1, qCard2, qCard3, qCard4, qCard5, qCard6, qCard7, qCard8]
+                print("yea!")
 
     # This saves the cards names in a file and also cutting it down to its initials.
-
-
-
-
-

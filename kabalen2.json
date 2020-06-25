@@ -1,1 +1,34 @@
-{"waste": {"suit": "U", "rank": "U"}, "tableau1": {"suit": "U", "rank": "U"}, "tableau2": {"suit": "U", "rank": "U"}, "tableau3": {"suit": "U", "rank": "U"}, "tableau4": {"suit": "S", "rank": "10"}, "tableau5": {"suit": "U", "rank": "U"}, "tableau6": {"suit": "U", "rank": "U"}, "tableau7": {"suit": "U", "rank": "U"}}
+{
+  "waste": {
+    "suit": "U",
+    "rank": "U"
+  },
+  "tableau1": {
+    "suit": "U",
+    "rank": "U"
+  },
+  "tableau2": {
+    "suit": "U",
+    "rank": "U"
+  },
+  "tableau3": {
+    "suit": "U",
+    "rank": "U"
+  },
+  "tableau4": {
+    "suit": "S",
+    "rank": "10"
+  },
+  "tableau5": {
+    "suit": "U",
+    "rank": "U"
+  },
+  "tableau6": {
+    "suit": "U",
+    "rank": "U"
+  },
+  "tableau7": {
+    "suit": "U",
+    "rank": "U"
+  }
+}
